@@ -1,0 +1,9 @@
+{
+  "filename": "stella_pink_v4",
+  "model": "gemini-2.5-flash-image",
+  "outputDir": "/Users/Foongbear/Downloads",
+  "images": [
+    "/Users/Foongbear/Desktop/Stella Pinstripe - Navy.jpg"
+  ],
+  "prompt": "Recolour the loungewear set (top and shorts) worn by the model. Replace every dark navy/charcoal stripe with a soft rose pink colour (approximately #E8929A). The white stripes remain white. Keep everything else unchanged: model, face, hair, pose, hands, mug, background, barrel, bench and throw."
+}
