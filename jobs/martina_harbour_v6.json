@@ -1,0 +1,11 @@
+{
+  "filename": "martina_harbour_v6",
+  "model": "gemini-2.5-flash-image",
+  "outputDir": "/Users/Foongbear/Downloads",
+  "images": [
+    "/Users/Foongbear/Desktop/Martina red harbour IG 1.jpg",
+    "/Users/Foongbear/Desktop/Martina DayDream Dress - Red.jpg",
+    "/Users/Foongbear/Desktop/IMG_2380.JPG"
+  ],
+  "prompt": "Look very carefully at the neckline in reference images 2 and 3 before doing anything. The neckline has gathered fabric that meets in the middle with a small flat bow tie. There is NO gap, NO split, NO V shape, NO exposed chest, NO open space between the breasts. The fabric is gathered and closed. Now correct the dress fabric in image 1 only \u2014 change the washed-out pink pleated texture to crisp red and white vertical pinstripe flat cotton, matching the fabric in images 2 and 3. The neckline in your output must show gathered fabric meeting at the centre with a small bow, closed, no gap. Do not open the neckline. Keep the model, face, hair, sunglasses, pose, harbour, bollard and lighting unchanged."
+}
