@@ -1,0 +1,10 @@
+{
+  "filename": "martina_harbour_gen3",
+  "prompt": "Generate a fashion photograph of a slim brunette woman in her late 20s wearing the exact dress from the reference images \u2014 red and white vertical pinstripe cotton maxi dress with gathered scoop neckline, small flat bow tie at centre front (fully closed, no gap, no keyhole), smocked elastic waist, tiered ruffled skirt, wide shoulder straps. She is sitting on stone harbour steps facing the camera, Mediterranean sea and boats in background, golden afternoon light. Close-up three-quarter shot showing dress detail clearly. Photorealistic, editorial fashion photography quality.",
+  "model": "gemini-2.5-flash-image",
+  "outputDir": "/Users/Foongbear/Downloads",
+  "images": [
+    "/Users/Foongbear/Desktop/Martina DayDream Dress - Red.jpg",
+    "/Users/Foongbear/Desktop/IMG_2380.JPG"
+  ]
+}
