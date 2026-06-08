@@ -1,0 +1,10 @@
+{
+  "filename": "martina_shoot_v2_3",
+  "prompt": "Fashion photograph. slim brunette woman mid-30s, long wavy brown hair, natural makeup, gold hoop earrings, barefoot wearing red and white vertical pinstripe cotton maxi dress, gathered scoop neckline with small flat bow tie at centre front (fully closed, no gap), smocked elastic waist, tiered ruffled skirt, wide shoulder straps. She sits on stone harbour steps at the Mediterranean harbour, white cubic whitewashed buildings on hillside in background, sailboats and yachts moored in turquoise blue water, stone harbour promenade, warm golden afternoon light, soft shadows, hazy sky, facing camera with a soft natural smile, one hand resting in lap. Three-quarter to full length shot. photorealistic editorial fashion photography, 35mm lens, shallow depth of field, warm film-like tones, soft contrast.",
+  "model": "gemini-2.5-flash-image",
+  "outputDir": "/Users/Foongbear/Downloads",
+  "images": [
+    "/Users/Foongbear/Desktop/Martina DayDream Dress - Red.jpg",
+    "/Users/Foongbear/Desktop/IMG_2380.JPG"
+  ]
+}
