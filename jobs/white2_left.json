@@ -1,0 +1,10 @@
+{
+  "filename": "white2_left",
+  "model": "gemini-2.5-flash-image",
+  "outputDir": "/Users/Foongbear/Library/CloudStorage/GoogleDrive-da@heyleyholdings.com/Shared drives/Me + Lia/Content/5. Product Highlight/Martina/Martina Navy/composites",
+  "images": [
+    "/Users/Foongbear/Library/CloudStorage/GoogleDrive-da@heyleyholdings.com/Shared drives/Me + Lia/Content/5. Product Highlight/Martina/Martina Navy/5ac58f9b-a6ae-4ad7-86d7-307aaf2dce9e.jpeg"
+  ],
+  "aspectRatio": "2:3",
+  "prompt": "Keep the woman EXACTLY as she is in the photo \u2014 her face, hair, skin tone, body, pose, hands, and especially her fine NAVY-AND-WHITE PINSTRIPE cotton midi dress \u2014 completely unchanged. Do NOT repaint, restyle, or alter her face or identity; treat her as a locked, untouched layer. Keep her feet and the ground fully visible, resting naturally on pale stone paving. Replace ONLY the background. A bright white Cycladic plaster wall. Position a single weathered pale-blue wooden shutter window clearly to the LEFT of her, fully visible and well separated from her body \u2014 she must NOT overlap or cross the window at all; she stands against plain clean white wall with open negative space around her. A small sprig of lavender low at the base of the wall. Soft warm Mediterranean daylight matching the existing light on her. Soft realistic contact shadow grounding her. Photographic, editorial, medium-format film look, fine grain, muted natural color, calm slow-fashion mood \u2014 a real photograph, never illustration or CGI. Vertical 2:3."
+}
