@@ -1,0 +1,9 @@
+{
+  "filename": "martina_navy_como_v1",
+  "model": "gemini-2.5-flash-image",
+  "outputDir": "/Users/Foongbear/Library/CloudStorage/GoogleDrive-da@heyleyholdings.com/Shared drives/Me + Lia/Content/5. Product Highlight/Martina/Martina Navy/composites",
+  "images": [
+    "/Users/Foongbear/Library/CloudStorage/GoogleDrive-da@heyleyholdings.com/Shared drives/Me + Lia/Content/5. Product Highlight/Martina/Martina Navy/0013_cutout.png"
+  ],
+  "prompt": "The provided PNG is the FIXED foreground subject (transparent background): a young woman standing in a fine NAVY-AND-WHITE PINSTRIPE cotton midi dress, with a woven straw tote bag and sunglasses resting on her head. Keep her 100% identical and untouched - her face, hair, skin tone, body, pose, hands, the straw tote, the sunglasses, and especially her navy-and-white pinstripe dress. Do NOT alter, repaint, recolor, restyle, sharpen, or move any part of her or her dress. Treat her as a locked layer. Generate ONLY a new photographic background behind her and composite her in unchanged, standing naturally grounded on the surface at her feet. WIDE CINEMATIC 16:9 LANDSCAPE composition with expansive epic scenery; place her in the lower-third and toward one side so the grand setting fills the frame. Match the light on the background to her soft warm daylight so it reads natural, never pasted. Photorealistic editorial travel photography, fine natural grain, no text, no watermark. Background: a grand neoclassical villa terrace on Lake Como in soft late-afternoon light - a classical carved-stone balustrade with stone urns, manicured cypress and blue hydrangea, the silver lake below ringed by steep green mountains and distant pastel villas, cooler refined old-world European light."
+}
