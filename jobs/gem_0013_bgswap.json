@@ -1,9 +1,0 @@
-{
-  "filename": "gem_0013_bgswap",
-  "model": "gemini-2.5-flash-image",
-  "outputDir": "/Users/Foongbear/Library/CloudStorage/GoogleDrive-da@heyleyholdings.com/Shared drives/Me + Lia/Content/5. Product Highlight/Martina/Martina Navy/composites",
-  "images": [
-    "/Users/Foongbear/Library/CloudStorage/GoogleDrive-da@heyleyholdings.com/Shared drives/Me + Lia/Content/5. Product Highlight/Martina/Martina Navy/0013_cutout.png"
-  ],
-  "prompt": "The provided PNG is the FIXED foreground subject (transparent background): a young woman standing. Keep her 100% identical and untouched - her face, hair, skin tone, body, pose, hands, the woven straw tote bag, the sunglasses resting on her head, and especially her fine NAVY-AND-WHITE PINSTRIPE cotton midi dress. Do NOT alter, repaint, recolor, restyle, sharpen, or move any part of her or her dress. Treat her as a locked layer. Generate ONLY a new photographic background behind her and composite her in unchanged: a sun-faded Provencal village wall in soft warm late-afternoon light - aged sand-and-ochre lime plaster with gentle age and patina, a weathered pale grey-blue wooden shutter on the right, worn pale stone paving at her feet so she stands naturally on the ground. Soft, warm, gently directional daylight from the front-left to match the existing soft light on the subject. Add a soft realistic contact shadow on the ground beneath and just behind her to anchor her. Photographic, editorial, medium-format film look, fine grain, muted natural color, calm slow-fashion mood. The background must look like a real photograph, never an illustration or CGI. Keep her scale and footing natural."
-}
