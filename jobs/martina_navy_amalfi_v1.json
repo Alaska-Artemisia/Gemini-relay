@@ -1,9 +1,0 @@
-{
-  "filename": "martina_navy_amalfi_v1",
-  "model": "gemini-2.5-flash-image",
-  "outputDir": "/Users/Foongbear/Library/CloudStorage/GoogleDrive-da@heyleyholdings.com/Shared drives/Me + Lia/Content/5. Product Highlight/Martina/Martina Navy/composites",
-  "images": [
-    "/Users/Foongbear/Library/CloudStorage/GoogleDrive-da@heyleyholdings.com/Shared drives/Me + Lia/Content/5. Product Highlight/Martina/Martina Navy/0013_cutout.png"
-  ],
-  "prompt": "The provided PNG is the FIXED foreground subject (transparent background): a young woman standing in a fine NAVY-AND-WHITE PINSTRIPE cotton midi dress, with a woven straw tote bag and sunglasses resting on her head. Keep her 100% identical and untouched - her face, hair, skin tone, body, pose, hands, the straw tote, the sunglasses, and especially her navy-and-white pinstripe dress. Do NOT alter, repaint, recolor, restyle, sharpen, or move any part of her or her dress. Treat her as a locked layer. Generate ONLY a new photographic background behind her and composite her in unchanged, standing naturally grounded on the surface at her feet. WIDE CINEMATIC 16:9 LANDSCAPE composition with expansive epic scenery; place her in the lower-third and toward one side so the grand setting fills the frame. Match the light on the background to her soft warm daylight so it reads natural, never pasted. Photorealistic editorial travel photography, fine natural grain, no text, no watermark. Background: a dramatic Amalfi Coast clifftop terrace at golden hour - pastel-painted villages cascading down vertical cliffs to a deep blue Tyrrhenian sea far below, a weathered pale-stone balustrade beside her, lemon trees and bougainvillea, distant headlands fading into warm golden haze, low warm sunlight raking across the scene."
-}
