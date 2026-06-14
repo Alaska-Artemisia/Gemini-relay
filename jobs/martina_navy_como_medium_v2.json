@@ -1,0 +1,9 @@
+{
+  "filename": "martina_navy_como_medium_v2",
+  "model": "gemini-2.5-flash-image",
+  "outputDir": "/Users/Foongbear/Library/CloudStorage/GoogleDrive-da@heyleyholdings.com/Shared drives/Me + Lia/Content/5. Product Highlight/Martina/Martina Navy/composites",
+  "images": [
+    "/Users/Foongbear/Library/CloudStorage/GoogleDrive-da@heyleyholdings.com/Shared drives/Me + Lia/Content/5. Product Highlight/Martina/Martina Navy/0013_cutout.png"
+  ],
+  "prompt": "The provided PNG is the FIXED foreground subject (transparent background): a young woman standing in a fine NAVY-AND-WHITE PINSTRIPE cotton midi dress, a woven straw tote bag, sunglasses resting on her head. Keep her 100% identical and untouched - face, hair, skin tone, body, pose, hands, the straw tote, the sunglasses, and especially her navy-and-white pinstripe dress. Do NOT alter, repaint, recolor, restyle, sharpen or move her or her dress. Treat her as a locked layer. Generate ONLY a new photographic background and composite her in unchanged, standing naturally grounded with a soft contact shadow. Photoreal editorial travel photography, fine natural grain, no text, no watermark. BACKGROUND: a grand neoclassical villa terrace on Lake Como in soft late-afternoon light - a carved pale-stone balustrade just behind her, a stone urn with blue hydrangea and a tall cypress to one side, the silver lake and steep green mountains with distant pastel villas softly out of focus behind her as a gentle BACKDROP, not a wide panorama. Cooler refined old-world European light. FRAMING: a medium editorial portrait from roughly mid-thigh up, she dominates the frame, shallow depth of field with the Lake Como terrace soft and blurred behind her so she is unmistakably the focus. Portrait orientation."
+}
