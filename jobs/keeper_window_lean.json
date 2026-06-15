@@ -1,0 +1,10 @@
+{
+  "filename": "keeper_window_lean",
+  "model": "gemini-2.5-flash-image",
+  "outputDir": "/Users/Foongbear/Library/CloudStorage/GoogleDrive-da@heyleyholdings.com/Shared drives/Me + Lia/Content/3. Gemini Working Folder",
+  "images": [
+    "/Users/Foongbear/Library/CloudStorage/GoogleDrive-da@heyleyholdings.com/Shared drives/Me + Lia/Content/3. Gemini Working Folder/1X5A6256.JPG"
+  ],
+  "prompt": "FIXED SUBJECT: the attached image is a locked foreground layer. Reproduce the woman and her dress EXACTLY and identically \u2014 same face, skin, long dark center-parted hair, body, and pose; do not redraw, recolor, restyle, resize, or move her. Preserve every detail of the dress: the small blue-and-white ditsy floral print, the scooped neckline with a small front tie, the white lace trim at neckline and straps, the shirred waist, the tiered lace-trimmed flounce hem, the midi length, and the cream leather ankle boots. Treat her as a locked layer and generate ONLY a new photographic background around her, replacing the plain studio. Relight so the scene's light falls naturally and consistently on her. Candid, unposed, real \u2014 like a quietly caught moment at home, NOT a catalog shot. Off-center composition is welcome. Warm neutral palette, soft natural window light, gentle film grain, photographic, no text, vertical 2:3. SCENE: she leans into a window frame with sheer curtains and soft daylight, a trailing potted plant nearby, a lived-in room behind her slightly out of focus. Quiet, candid, unhurried. Leave clean space in the upper third for a headline.",
+  "aspectRatio": "2:3"
+}
