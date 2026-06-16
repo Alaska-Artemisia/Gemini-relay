@@ -1,0 +1,10 @@
+{
+  "filename": "bianca_swap_B2_cyclades",
+  "model": "gemini-2.5-flash-image",
+  "outputDir": "/Users/Foongbear/Library/CloudStorage/GoogleDrive-da@heyleyholdings.com/Shared drives/Me + Lia/Content/3. Gemini Working Folder",
+  "aspectRatio": "2:3",
+  "images": [
+    "/Users/Foongbear/Library/CloudStorage/GoogleDrive-da@heyleyholdings.com/Shared drives/Me + Lia/Content/5. Product Highlight/Bianca/Bianca Cloud Rose/Bianca Rose full body web2.jpg"
+  ],
+  "prompt": "FIXED foreground subject: the woman and everything she is wearing. In the source image she stands on a plain white studio backdrop \u2014 remove that backdrop completely and replace it with the new scene described below, but treat HER as a locked, unedited layer. Do NOT regenerate, restyle, relight, or reshape her face, body, hair, skin tone, dress, print, or footwear. Preserve exactly: warm tan skin; long dark-brown centre-parted hair past the shoulders; relaxed expression; arms loose at her sides; a sleeveless ivory/cream tiered cotton midi dress in a tiny pink-and-sage ditsy floral print, scooped neckline with a small self-tie bow at the chest, shirred waist, lace-trim band on the lower tier; a fine gold chain; low pearl-embellished clear sandals. Generate ONLY a new photographic background. Match the new scene's light to her existing soft, even, warm frontal lighting \u2014 open shade, gentle and diffused, no harsh backlight, no hard new shadows across her, a natural grounded contact shadow at her feet.\n\nBACKGROUND: A quiet corner of a Cycladic Greek-island lane \u2014 warm sandy stone underfoot, a low whitewashed wall, and a soft cream-stone archway behind her. Spare and clean: one small blue-painted timber window shutter, a smooth worn stone step, a sliver of pale sky above the wall. Gentle warm diffused light. Distinctly Greek-island, calm and deliberate, clearly a different village.\n\nFRAMING: vertical portrait, about 2:3. Full figure centred, filling roughly 88% of frame height, a little ground beneath her sandals and slight headroom above. Eye-level camera, ~35-50mm look, medium depth of field so the background reads clearly but sits softly behind her."
+}
