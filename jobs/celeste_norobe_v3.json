@@ -1,0 +1,10 @@
+{
+  "filename": "celeste_norobe_v3",
+  "model": "gemini-2.5-flash-image",
+  "outputDir": "/Users/Foongbear/Library/CloudStorage/GoogleDrive-da@heyleyholdings.com/Shared drives/Me + Lia/Content/3. Gemini Working Folder",
+  "images": [
+    "/Users/Foongbear/Library/CloudStorage/GoogleDrive-da@heyleyholdings.com/Shared drives/Me + Lia/Content/3. Gemini Working Folder/celeste_robe_minuit.jpg"
+  ],
+  "prompt": "Cleanly remove the kimono-style polka-dot robe from this photo, leaving the woman in just her navy polka-dot tie-front tank top and matching shorts. Erase every robe element: the wide bell sleeves on both sides, the vertical lace-edged lapels, and any robe fabric on her shoulders or hanging beside her body. Restore her natural bare arms, bare shoulders and hands, matching her skin tone with soft natural shadows. Do not alter her face, hair, makeup, expression, posture, or the loungewear underneath. Inpaint the vacated areas with the surrounding bougainvillea, foliage and sunlit wall so there are no traces of the robe. Maintain original resolution, colour and lighting.",
+  "aspectRatio": "2:3"
+}
