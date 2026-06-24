@@ -197,9 +197,34 @@ async function runStep(page, step, result, outDir, jobName) {
       return { do: 'exists', selector: sel, as: step.as, value: v, ok: true };
     }
     case 'eval': {
-      const v = await page.evaluate(step.script);
+      // Accept either a function expression ("() => ...", "function(){...}",
+      // "async () => ...") which we invoke, or a bare expression which we
+      // evaluate directly. Playwright treats a string as an expression, so a
+      // function string must be wrapped and called: (fn)().
+      const s = String(step.script || '').trim();
+      const isFn = /^(async\s+)?(\(|function\b)/.test(s) || s.includes('=>');
+      const v = await page.evaluate(isFn ? `(${s})()` : s);
       if (step.as) result.data[step.as] = v;
       return { do: 'eval', as: step.as, value: v, ok: true };
+    }
+    case 'scroll': {
+      // Trigger lazy-loaded / scroll-revealed content by paging to the bottom
+      // until height stops growing, then return to top.
+      const passes = step.passes ?? 10;
+      const pauseMs = step.pauseMs ?? 400;
+      await page.evaluate(async ({ passes, pauseMs }) => {
+        const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+        let last = -1;
+        for (let i = 0; i < passes; i++) {
+          window.scrollTo(0, document.body.scrollHeight);
+          await sleep(pauseMs);
+          const h = document.body.scrollHeight;
+          if (h === last) break;
+          last = h;
+        }
+        window.scrollTo(0, 0);
+      }, { passes, pauseMs });
+      return { do: 'scroll', passes, ok: true };
     }
     case 'screenshot': {
       const name = step.name || `shot${result.screenshots.length + 1}`;
