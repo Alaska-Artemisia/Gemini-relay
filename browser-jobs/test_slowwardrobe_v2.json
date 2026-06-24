@@ -1,0 +1,62 @@
+{
+  "type": "browser",
+  "filename": "test_slowwardrobe_v2",
+  "headful": false,
+  "steps": [
+    {
+      "do": "goto",
+      "url": "https://meandlia.com/slow-wardrobe",
+      "waitUntil": "networkidle",
+      "timeoutMs": 45000
+    },
+    {
+      "do": "waitFor",
+      "selector": "h1",
+      "timeoutMs": 15000
+    },
+    {
+      "do": "scroll",
+      "passes": 12,
+      "pauseMs": 500
+    },
+    {
+      "do": "waitMs",
+      "ms": 900
+    },
+    {
+      "do": "text",
+      "selector": "h1",
+      "as": "headline"
+    },
+    {
+      "do": "eval",
+      "script": "() => document.title",
+      "as": "pageTitle"
+    },
+    {
+      "do": "count",
+      "selector": "a",
+      "as": "linkCount"
+    },
+    {
+      "do": "exists",
+      "selector": "a[href$='.pdf']",
+      "as": "hasPdfLink"
+    },
+    {
+      "do": "eval",
+      "script": "() => { const a=[...document.querySelectorAll('a')].find(x=>/download|guide|\\.pdf/i.test((x.textContent||'')+' '+(x.href||''))); return a ? a.href : null; }",
+      "as": "guideHref"
+    },
+    {
+      "do": "eval",
+      "script": "() => [...document.querySelectorAll('a,button')].filter(x=>/download|guide/i.test(x.textContent||'')).map(x=>(x.textContent||'').trim()).slice(0,6)",
+      "as": "ctaLabels"
+    },
+    {
+      "do": "screenshot",
+      "name": "page",
+      "fullPage": true
+    }
+  ]
+}
