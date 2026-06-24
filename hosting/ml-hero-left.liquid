@@ -1,0 +1,305 @@
+{%- comment -%}
+  LCP preload - signal the browser to fetch the hero image as early as possible.
+  <link rel="preload"> is valid in <body> (HTML5 spec sec.4.2.4) and browsers act
+  on it immediately. Placing it here (before the section markup) means it is
+  discovered as soon as the header HTML is done streaming, well before the
+  <img> tag itself would be parsed.
+{%- endcomment -%}
+{%- if section.settings.image != blank -%}
+  <link rel="preload" as="image"
+    href="{{ section.settings.image | image_url: width: 1600 }}"
+    imagesrcset="{{ section.settings.image | image_url: width: 800 }} 800w, {{ section.settings.image | image_url: width: 1200 }} 1200w, {{ section.settings.image | image_url: width: 1600 }} 1600w"
+    imagesizes="100vw">
+{%- endif -%}
+
+{% comment %}
+  Section: Hero - Left Text & Button
+  Purpose: Left-aligned content box on top of a full-bleed image (homepage).
+  Notes:
+   - Mobile centers the content automatically for readability.
+   - Supports optional mobile-specific image, overlay, offsets, and a CTA button.
+   - Optimized: responsive sources, capped widths, eager+high priority for LCP.
+   - max-height: 88vh on media ensures a peek of the next section is always
+     visible, which improves scroll depth (Clarity: 39.6% avg scroll depth).
+   - Subtext is wrapped in an anchor link to eliminate dead clicks (Clarity:
+     49+ dead clicks/month on hero text that users expected to be clickable).
+{% endcomment %}
+
+<section class="ml-hero" id="ml-hero-{{ section.id }}" role="region" aria-label="{{ section.settings.heading | strip_html | escape }}">
+  <div class="ml-hero__media">
+    <picture>
+      {% if section.settings.image_mobile != blank %}
+        <source
+          media="(max-width: 749px)"
+          srcset="
+            {{ section.settings.image_mobile | image_url: width: 800 }} 800w,
+            {{ section.settings.image_mobile | image_url: width: 1200 }} 1200w"
+          sizes="100vw">
+      {% endif %}
+
+      {% if section.settings.image != blank %}
+        {%- assign hero_alt = section.settings.image.alt | default: section.settings.heading | strip_html | default: 'Model in a blue floral dress seated in a rattan bistro chair at a wine bar, holding a glass of white wine' -%}
+        {{ section.settings.image
+          | image_url: width: 1600
+          | image_tag:
+            widths: '800,1200,1600',
+            sizes: '100vw',
+            loading: 'eager',
+            fetchpriority: 'high',
+            alt: hero_alt,
+            class: 'ml-hero__img'
+        }}
+      {% else %}
+        {{ 'lifestyle-1' | placeholder_svg_tag: 'ml-hero__img' }}
+      {% endif %}
+    </picture>
+
+    <div class="ml-hero__overlay" aria-hidden="true"></div>
+  </div>
+
+  <div class="ml-hero__content">
+    {% if section.settings.kicker != blank %}
+      <p class="ml-hero__kicker">{{ section.settings.kicker }}</p>
+    {% endif %}
+
+    {% if section.settings.heading != blank %}
+      <h2 class="ml-hero__heading">{{ section.settings.heading }}</h2>
+    {% endif %}
+
+    {% if section.settings.subtext != blank %}
+      {%- if section.settings.button_link != blank -%}
+        {%- comment -%}
+          Wrap subtext in a same-destination link as the CTA button.
+          tabindex="-1" + aria-hidden="true" keep this out of the focus order
+          (the visible button already handles keyboard/screen-reader navigation).
+          This purely eliminates the 49+ dead-clicks/month recorded in Clarity
+          where users clicked the hero text expecting it to navigate.
+        {%- endcomment -%}
+        <a class="ml-hero__subtext ml-hero__subtext--linked"
+           href="{{ section.settings.button_link }}"
+           tabindex="-1"
+           aria-hidden="true">{{ section.settings.subtext }}</a>
+      {%- else -%}
+        <div class="ml-hero__subtext">{{ section.settings.subtext }}</div>
+      {%- endif -%}
+    {% endif %}
+
+    {% if section.settings.button_label != blank and section.settings.button_link != blank %}
+      <a class="ml-hero__btn button{% if section.settings.button_style == 'secondary' %} button--secondary{% endif %}"
+         href="{{ section.settings.button_link }}">
+        {{ section.settings.button_label }}
+      </a>
+    {% endif %}
+  </div>
+
+  <style>
+    /* ------------------------------------------------------------
+       CRITICAL: anchor absolute content to THIS hero section
+       (Safe for desktop; prevents mobile "disappearing")
+       ------------------------------------------------------------ */
+    #ml-hero-{{ section.id }}{
+      --ml-left: {{ section.settings.offset_left | default: 6 }}%;
+      --ml-top: {{ section.settings.v_align }};
+      --ml-maxw: {{ section.settings.content_max_width | default: 520 }}px;
+      --ml-padding: {{ section.settings.content_padding | default: 24 }}px;
+      --ml-overlay: {{ section.settings.overlay_opacity | divided_by: 100.0 }};
+      --ml-text: {% if section.settings.text_color_scheme == 'light' %}255,255,255{% else %}0,0,0{% endif %};
+
+      position: relative;  /* anchor */
+      isolation: isolate;  /* clean stacking */
+    }
+
+    #ml-hero-{{ section.id }} .ml-hero__media{
+      position: relative;
+      width:100%;
+      overflow:hidden;
+      z-index: 1;
+      /* peek-below fix: cap height so the next section (products) is always
+         slightly visible above the fold - improves scroll-depth engagement */
+      max-height: 88vh;
+      {% case section.settings.height %}
+        {% when 'small' %} aspect-ratio: 16/7;
+        {% when 'medium' %} aspect-ratio: 16/9;
+        {% when 'large' %} aspect-ratio: 16/10;
+      {% endcase %}
+    }
+
+    #ml-hero-{{ section.id }} .ml-hero__img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+
+    #ml-hero-{{ section.id }} .ml-hero__overlay{
+      position:absolute;
+      inset:0;
+      z-index: 2;
+      background: linear-gradient(90deg, rgba(0,0,0,var(--ml-overlay)) 0%, rgba(0,0,0,calc(var(--ml-overlay)*0.3)) 45%, rgba(0,0,0,0) 75%);
+      pointer-events:none;
+      {% if section.settings.text_color_scheme == 'dark' %}
+        background: linear-gradient(90deg, rgba(255,255,255,var(--ml-overlay)) 0%, rgba(255,255,255,calc(var(--ml-overlay)*0.4)) 45%, rgba(255,255,255,0) 75%);
+      {% endif %}
+    }
+
+    /* Desktop content positioning */
+    #ml-hero-{{ section.id }} .ml-hero__content{
+      position:absolute;
+      left: var(--ml-left);
+      top: 50%;
+      transform: translateY(
+        {% case section.settings.v_align %}
+          {% when '0%' %}-50%{% when '50%' %}-0%{% when '100%' %} -(-50%) {% endcase %}
+      );
+      display:flex; flex-direction:column; gap:10px;
+      max-width: var(--ml-maxw);
+      padding: var(--ml-padding);
+      color: rgb(var(--ml-text));
+      text-align:left;
+      justify-content: {% if section.settings.v_align == '0%' %}flex-start{% elsif section.settings.v_align == '100%' %}flex-end{% else %}center{% endif %};
+      z-index: 3;
+    }
+
+    #ml-hero-{{ section.id }} .ml-hero__kicker{ font-size: clamp(1.2rem, 0.9rem + 0.5vw, 1.4rem); letter-spacing:.08em; text-transform:uppercase; opacity:.9; }
+    #ml-hero-{{ section.id }} .ml-hero__heading{ font-size: clamp(2.2rem, 1.3rem + 2.2vw, 4.0rem); line-height:1.1; margin:0; }
+    #ml-hero-{{ section.id }} .ml-hero__subtext{ font-size: clamp(1.4rem, 1.1rem + 0.5vw, 1.8rem); opacity:.95; }
+    /* subtext-as-link: looks like plain text, prevents dead clicks in Clarity */
+    #ml-hero-{{ section.id }} .ml-hero__subtext--linked{ text-decoration:none; color:inherit; cursor:pointer; display:block; }
+    #ml-hero-{{ section.id }} .ml-hero__subtext--linked:hover{ text-decoration:underline; text-underline-offset:3px; }
+    #ml-hero-{{ section.id }} .ml-hero__btn{
+      margin-top:8px;
+      align-self:flex-start;
+      border-radius:6px;
+      background:#9e4c58;
+      color:#fbf4ef;
+      border:none;
+      box-shadow:none;
+      font-size:16px;
+    }
+    #ml-hero-{{ section.id }} .ml-hero__btn:hover{ background:#8a4250; color:#fbf4ef; }
+    #ml-hero-{{ section.id }} .ml-hero__btn::after{ border-radius:6px; }
+
+    /* ------------------------------------------------------------
+       MOBILE ONLY: smaller type + smaller button + slightly left
+       ------------------------------------------------------------ */
+    @media (max-width: 749px){
+
+      /* Keep content visible and positioned inside the hero */
+      #ml-hero-{{ section.id }} .ml-hero__content{
+        left: 6%;
+        right: auto;
+        top: auto;
+        bottom: 7%;
+        transform: none;
+
+        max-width: 86vw;
+
+        text-align: left;
+        align-items: flex-start;
+
+        /* subtle readability layer */
+        background: rgba({% if section.settings.text_color_scheme == 'light' %}0,0,0{% else %}255,255,255{% endif %}, 0.12);
+        border-radius: 10px;
+        padding: 14px 16px;
+      }
+
+      /* Smaller heading on mobile */
+      #ml-hero-{{ section.id }} .ml-hero__heading{
+        font-size: 1.75rem;
+        line-height: 1.12;
+      }
+
+      /* One-liner subtext */
+      #ml-hero-{{ section.id }} .ml-hero__subtext,
+      #ml-hero-{{ section.id }} .ml-hero__subtext *{
+        font-size: var(--ml-hero-subtext-mobile) !important;
+        line-height: 1.5 !important;
+      }
+
+      /* CTA button */
+      #ml-hero-{{ section.id }} .ml-hero__btn{
+        align-self: flex-start;
+        margin-top: 8px;
+        padding: 12px 26px !important;
+        font-size: 13px !important;
+        line-height: 1.2 !important;
+        border-radius: 6px !important;
+      }
+    }
+  </style>
+</section>
+
+{% schema %}
+{
+  "name": "Hero - Left Text & Button",
+  "tag": "section",
+  "class": "ml-hero--section",
+  "settings": [
+    { "type": "image_picker", "id": "image", "label": "Desktop image" },
+    { "type": "image_picker", "id": "image_mobile", "label": "Mobile image (optional)" },
+
+    {
+      "type": "select",
+      "id": "height",
+      "label": "Section height",
+      "default": "large",
+      "options": [
+        { "value": "small", "label": "Small" },
+        { "value": "medium", "label": "Medium" },
+        { "value": "large", "label": "Large" }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "overlay_opacity",
+      "label": "Overlay strength (left fade)",
+      "min": 0, "max": 80, "step": 5, "default": 25
+    },
+    {
+      "type": "radio",
+      "id": "text_color_scheme",
+      "label": "Text color",
+      "options": [
+        { "value": "light", "label": "Light (white)" },
+        { "value": "dark", "label": "Dark (black)" }
+      ],
+      "default": "light"
+    },
+
+    { "type": "text", "id": "kicker", "label": "Eyebrow (optional)", "default": "Your tagline here" },
+    { "type": "richtext", "id": "heading", "label": "Headline", "default": "<p>Effortless pieces for everyday joy</p>" },
+    { "type": "textarea", "id": "subtext", "label": "One-liner", "default": "Designed in Australia. Made to live in." },
+
+    { "type": "text", "id": "button_label", "label": "Button label", "default": "Shop now" },
+    { "type": "url", "id": "button_link", "label": "Button link" },
+    {
+      "type": "select",
+      "id": "button_style",
+      "label": "Button style",
+      "default": "primary",
+      "options": [
+        { "value": "primary", "label": "Primary" },
+        { "value": "secondary", "label": "Secondary" }
+      ]
+    },
+
+    { "type": "range", "id": "offset_left", "label": "Left offset (%)", "min": 2, "max": 20, "step": 1, "default": 6 },
+    {
+      "type": "select",
+      "id": "v_align",
+      "label": "Vertical alignment (desktop)",
+      "default": "50%",
+      "options": [
+        { "value": "0%", "label": "Top" },
+        { "value": "50%", "label": "Middle" },
+        { "value": "100%", "label": "Bottom" }
+      ]
+    },
+    { "type": "range", "id": "content_max_width", "label": "Content max width (px)", "min": 360, "max": 800, "step": 10, "default": 520 },
+    { "type": "range", "id": "content_padding", "label": "Content padding (px)", "min": 0, "max": 40, "step": 2, "default": 24 }
+  ],
+  "presets": [
+    { "name": "Hero - Left Text & Button", "category": "Image" }
+  ]
+}
+{% endschema %}
