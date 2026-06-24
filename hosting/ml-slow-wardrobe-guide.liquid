@@ -1,0 +1,124 @@
+{%- comment -%}
+  Me + Lia — Slow Wardrobe Guide (custom).
+  Portrait cover image on one side; blush text panel on the other, vertically
+  centred. Three points rendered as an editorial numbered list (Cormorant rose
+  numerals + hairline rules). Matches the Promise / Founder warm system.
+{%- endcomment -%}
+
+{%- assign uid = section.id | replace: '_', '' | replace: '-', '' -%}
+{%- assign img = section.settings.image -%}
+{%- assign alt_txt = section.settings.image_alt | default: section.settings.heading -%}
+
+<style>
+  #mlswg-{{ uid }}{ padding-top: {{ section.settings.padding_top }}px; padding-bottom: {{ section.settings.padding_bottom }}px; }
+  #mlswg-{{ uid }} .swg{ max-width: none; margin: 0; display: flex; flex-direction: column; }
+  #mlswg-{{ uid }} .swg__media{ width: 100%; }
+  #mlswg-{{ uid }} .swg__media img{ display: block; width: 100%; height: auto; }
+  #mlswg-{{ uid }} .swg__panel{
+    background: {{ section.settings.bg_color }};
+    padding: 38px 26px;
+    display: flex; flex-direction: column; justify-content: center;
+  }
+  #mlswg-{{ uid }} .swg__eyebrow{
+    font-family: var(--font-body-family);
+    text-transform: uppercase; letter-spacing: .18em; font-size: 12px; font-weight: 600;
+    color: {{ section.settings.accent_color }}; margin: 0 0 14px;
+  }
+  #mlswg-{{ uid }} .swg__heading{
+    font-family: var(--font-heading-family); font-weight: 500;
+    color: {{ section.settings.heading_color }};
+    font-size: 30px; line-height: 1.12; letter-spacing: .3px; margin: 0 0 14px;
+  }
+  #mlswg-{{ uid }} .swg__intro{
+    font-family: var(--font-body-family); font-weight: 400;
+    color: {{ section.settings.intro_color }};
+    font-size: 16px; line-height: 1.6; margin: 0 0 18px; max-width: 440px;
+  }
+  #mlswg-{{ uid }} .swg__list{ list-style: none; counter-reset: swg; margin: 4px 0 0; padding: 0; max-width: 440px; }
+  #mlswg-{{ uid }} .swg__list li{
+    counter-increment: swg; display: flex; gap: 16px; align-items: baseline;
+    padding: 13px 0; border-top: 1px solid rgba(158,76,88,.22);
+    font-family: var(--font-body-family); font-size: 16px; line-height: 1.4;
+    color: {{ section.settings.text_color }};
+  }
+  #mlswg-{{ uid }} .swg__list li:last-child{ border-bottom: 1px solid rgba(158,76,88,.22); }
+  #mlswg-{{ uid }} .swg__list li::before{
+    content: counter(swg, decimal-leading-zero);
+    font-family: var(--font-heading-family); font-weight: 500; font-size: 20px;
+    color: {{ section.settings.accent_color }}; min-width: 26px; line-height: 1.1;
+  }
+  #mlswg-{{ uid }} .swg__cta{
+    align-self: flex-start; margin-top: 26px;
+    background: transparent !important; color: {{ section.settings.accent_color }} !important;
+    border: 1.5px solid {{ section.settings.accent_color }} !important; box-shadow: none !important;
+    border-radius: 8px !important; padding: 12px 28px !important; min-height: 0 !important;
+    font-family: var(--font-body-family) !important; letter-spacing: 1px !important; text-transform: none !important;
+    transition: background .2s ease, color .2s ease !important;
+  }
+  #mlswg-{{ uid }} .swg__cta::before, #mlswg-{{ uid }} .swg__cta::after{ box-shadow: none !important; border: 0 !important; }
+  #mlswg-{{ uid }} .swg__cta:hover{ background: {{ section.settings.accent_color }} !important; color: #F9EEED !important; }
+
+  @media (min-width: 750px){
+    #mlswg-{{ uid }} .swg{ flex-direction: {% if section.settings.image_side == 'right' %}row-reverse{% else %}row{% endif %}; align-items: stretch; }
+    #mlswg-{{ uid }} .swg__media{ flex: 0 0 {{ section.settings.image_width | default: 50 }}%; }
+    #mlswg-{{ uid }} .swg__panel{ flex: 1; padding: 48px 56px; }
+    #mlswg-{{ uid }} .swg__heading{ font-size: 38px; }
+  }
+</style>
+
+<div id="mlswg-{{ uid }}">
+  <div class="swg">
+    {%- if img -%}
+      <div class="swg__media">
+        {{ img | image_url: width: 1200 | image_tag: loading: 'lazy', sizes: '(min-width: 750px) 50vw, 100vw', widths: '400, 600, 800, 1000, 1200', alt: alt_txt }}
+      </div>
+    {%- endif -%}
+    <div class="swg__panel">
+      {%- if section.settings.eyebrow != blank -%}<p class="swg__eyebrow">{{ section.settings.eyebrow }}</p>{%- endif -%}
+      {%- if section.settings.heading != blank -%}<h2 class="swg__heading">{{ section.settings.heading }}</h2>{%- endif -%}
+      {%- if section.settings.intro != blank -%}<p class="swg__intro">{{ section.settings.intro }}</p>{%- endif -%}
+      <ol class="swg__list">
+        {%- if section.settings.item_1 != blank -%}<li>{{ section.settings.item_1 }}</li>{%- endif -%}
+        {%- if section.settings.item_2 != blank -%}<li>{{ section.settings.item_2 }}</li>{%- endif -%}
+        {%- if section.settings.item_3 != blank -%}<li>{{ section.settings.item_3 }}</li>{%- endif -%}
+        {%- if section.settings.item_4 != blank -%}<li>{{ section.settings.item_4 }}</li>{%- endif -%}
+      </ol>
+      {%- if section.settings.button_label != blank -%}
+        <a class="swg__cta button" href="{{ section.settings.button_link | default: '/pages/slow-wardrobe-guide' }}">{{ section.settings.button_label }}</a>
+      {%- endif -%}
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Slow Wardrobe Guide",
+  "tag": "section",
+  "settings": [
+    { "type": "image_picker", "id": "image", "label": "Cover image (portrait)" },
+    { "type": "text", "id": "image_alt", "label": "Image alt text" },
+    { "type": "select", "id": "image_side", "label": "Image side (desktop)", "options": [ { "value": "left", "label": "Left" }, { "value": "right", "label": "Right" } ], "default": "left" },
+    { "type": "range", "id": "image_width", "label": "Image width (desktop %)", "min": 40, "max": 60, "step": 2, "unit": "%", "default": 50 },
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "The Free Guide" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "The Slow Wardrobe Guide" },
+    { "type": "textarea", "id": "intro", "label": "Intro", "default": "A short, practical guide to building a wardrobe you actually keep. Yours free when you join our list." },
+    { "type": "header", "content": "List points" },
+    { "type": "text", "id": "item_1", "label": "Point 1", "default": "What to look for in cotton" },
+    { "type": "text", "id": "item_2", "label": "Point 2", "default": "How to care for it so it lasts" },
+    { "type": "text", "id": "item_3", "label": "Point 3", "default": "The pieces worth keeping" },
+    { "type": "text", "id": "item_4", "label": "Point 4 (optional)" },
+    { "type": "header", "content": "Button" },
+    { "type": "text", "id": "button_label", "label": "Button label", "default": "Read the Guide" },
+    { "type": "url", "id": "button_link", "label": "Button link" },
+    { "type": "header", "content": "Colors & spacing" },
+    { "type": "color", "id": "bg_color", "label": "Panel background", "default": "#F9EEED" },
+    { "type": "color", "id": "heading_color", "label": "Heading", "default": "#9E4C58" },
+    { "type": "color", "id": "accent_color", "label": "Numerals / eyebrow / button", "default": "#9E4C58" },
+    { "type": "color", "id": "text_color", "label": "List text", "default": "#2b2b2b" },
+    { "type": "color", "id": "intro_color", "label": "Intro text", "default": "#41505a" },
+    { "type": "range", "id": "padding_top", "label": "Padding top", "min": 0, "max": 80, "step": 2, "unit": "px", "default": 8 },
+    { "type": "range", "id": "padding_bottom", "label": "Padding bottom", "min": 0, "max": 80, "step": 2, "unit": "px", "default": 8 }
+  ],
+  "presets": [ { "name": "Slow Wardrobe Guide" } ]
+}
+{% endschema %}
