@@ -174,6 +174,9 @@ async function runStep(page, step, result, outDir, jobName) {
     case 'press':
       await page.keyboard.press(step.key);
       return { do: 'press', key: step.key, ok: true };
+    case 'setViewport':
+      await page.setViewportSize({ width: step.width, height: step.height });
+      return { do: 'setViewport', width: step.width, height: step.height, ok: true };
     case 'text': {
       const el = await page.waitForSelector(sel, { timeout: to });
       const v = (await el.textContent() || '').trim();
@@ -247,12 +250,24 @@ async function runJob(job) {
     finishedAt: null, data: {}, screenshots: [], steps: [], error: null,
   };
   const cm = await ensurePlaywright();
-  const context = await cm.launchPersistentContext(PROFILE_DIR, {
+  const ctxOpts = {
     headless: job.headful ? false : true,
     viewport: { width: job.width || 1280, height: job.height || 1600 },
-  });
+  };
+  if (job.userAgent) ctxOpts.userAgent = job.userAgent;
+  if (job.deviceScaleFactor) ctxOpts.deviceScaleFactor = job.deviceScaleFactor;
+  const context = await cm.launchPersistentContext(PROFILE_DIR, ctxOpts);
+  const consoleMsgs = [], pageErrors = [], failedReq = [], badResp = [];
+  const noise = /message channel closed|Extension context|ResizeObserver loop/i;
   try {
     const page = context.pages()[0] || (await context.newPage());
+    page.on('console', (m) => {
+      const t = m.type();
+      if (t === 'error' || t === 'warning') { const tx = m.text(); if (!noise.test(tx)) consoleMsgs.push({ type: t, text: tx.slice(0, 300) }); }
+    });
+    page.on('pageerror', (e) => { const tx = String((e && e.message) || e); if (!noise.test(tx)) pageErrors.push(tx.slice(0, 300)); });
+    page.on('requestfailed', (r) => { const f = r.failure(); failedReq.push({ url: r.url().slice(0, 200), method: r.method(), error: (f && f.errorText) || '' }); });
+    page.on('response', (resp) => { const s = resp.status(); if (s >= 400) badResp.push({ url: resp.url().slice(0, 200), status: s }); });
     for (const step of (job.steps || [])) {
       try {
         const r = await runStep(page, step, result, outDir, jobName);
@@ -265,6 +280,10 @@ async function runJob(job) {
       }
     }
     result.ok = !result.error;
+    try { result.finalUrl = page.url(); } catch {}
+    result.console = consoleMsgs;
+    result.pageErrors = pageErrors;
+    result.network = { failed: failedReq, bad: badResp };
   } finally {
     await context.close();
     result.finishedAt = new Date().toISOString();
