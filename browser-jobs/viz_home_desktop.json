@@ -1,0 +1,99 @@
+{
+  "type": "browser",
+  "filename": "viz_home_desktop",
+  "headful": false,
+  "width": 1440,
+  "height": 900,
+  "steps": [
+    {
+      "do": "goto",
+      "url": "https://meandlia.com/",
+      "waitUntil": "networkidle",
+      "timeoutMs": 45000
+    },
+    {
+      "do": "scroll",
+      "passes": 18,
+      "pauseMs": 380
+    },
+    {
+      "do": "waitMs",
+      "ms": 900
+    },
+    {
+      "do": "eval",
+      "script": "() => { window.scrollTo(0,0); return document.body.scrollHeight; }",
+      "as": "pageHeight"
+    },
+    {
+      "do": "screenshot",
+      "name": "full",
+      "fullPage": true
+    },
+    {
+      "do": "eval",
+      "script": "() => { window.scrollTo(0,0); return window.scrollY; }"
+    },
+    {
+      "do": "waitMs",
+      "ms": 500
+    },
+    {
+      "do": "screenshot",
+      "name": "v00",
+      "fullPage": false
+    },
+    {
+      "do": "eval",
+      "script": "() => { window.scrollTo(0,1500); return window.scrollY; }"
+    },
+    {
+      "do": "waitMs",
+      "ms": 500
+    },
+    {
+      "do": "screenshot",
+      "name": "v01",
+      "fullPage": false
+    },
+    {
+      "do": "eval",
+      "script": "() => { window.scrollTo(0,3000); return window.scrollY; }"
+    },
+    {
+      "do": "waitMs",
+      "ms": 500
+    },
+    {
+      "do": "screenshot",
+      "name": "v02",
+      "fullPage": false
+    },
+    {
+      "do": "eval",
+      "script": "() => { window.scrollTo(0,4500); return window.scrollY; }"
+    },
+    {
+      "do": "waitMs",
+      "ms": 500
+    },
+    {
+      "do": "screenshot",
+      "name": "v03",
+      "fullPage": false
+    },
+    {
+      "do": "eval",
+      "script": "() => { window.scrollTo(0,6000); return window.scrollY; }"
+    },
+    {
+      "do": "waitMs",
+      "ms": 500
+    },
+    {
+      "do": "screenshot",
+      "name": "v04",
+      "fullPage": false
+    }
+  ]
+}
