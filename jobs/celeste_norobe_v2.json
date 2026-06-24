@@ -1,0 +1,10 @@
+{
+  "filename": "celeste_norobe_v2",
+  "model": "gemini-2.5-flash-image",
+  "outputDir": "/Users/Foongbear/Library/CloudStorage/GoogleDrive-da@heyleyholdings.com/Shared drives/Me + Lia/Content/3. Gemini Working Folder",
+  "images": [
+    "/Users/Foongbear/Library/CloudStorage/GoogleDrive-da@heyleyholdings.com/Shared drives/Me + Lia/Content/3. Gemini Working Folder/celeste_robe_minuit.jpg"
+  ],
+  "prompt": "The model wears a sleeveless navy polka-dot loungewear set (tie-front cami plus shorts) with a matching long robe over the top. Edit the image so she is wearing ONLY the cami and shorts and the robe is completely gone, as if she never put it on. Reconstruct both arms fully bare from shoulder to hand with relaxed, natural skin tone and lighting consistent with the rest of her body. Preserve identically: her face, freckles, hair, smile, head tilt, posture, and the cami and shorts. Rebuild the background behind the removed robe panels and sleeves using the same warm plaster wall, green leaves, white flowers and dappled shadow. Clean, photorealistic, studio-quality, no robe remnants.",
+  "aspectRatio": "2:3"
+}
