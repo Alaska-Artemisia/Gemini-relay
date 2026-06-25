@@ -1,0 +1,60 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "banner": {
+      "type": "main-collection-banner",
+      "custom_css": [
+        "/* Shrink the \"Daydream Dresses\" title */.collection-hero__title {font-size: 2rem !important; /* Adjust this number (e.g., 2.0 or 3.0) to your liking */ margin-bottom: 1rem !important; /* Optional: tightens the gap below it */}",
+        " /* Make it even smaller on mobile phones */@media screen and (max-width: 749px) {.collection-hero__title {font-size: 1.8rem !important; }}"
+      ],
+      "settings": {
+        "show_collection_description": true,
+        "show_collection_image": false,
+        "color_scheme": "scheme-1"
+      }
+    },
+    "product-grid": {
+      "type": "main-collection-product-grid",
+      "settings": {
+        "products_per_page": 16,
+        "columns_desktop": 4,
+        "columns_mobile": "2",
+        "color_scheme": "scheme-1",
+        "image_ratio": "adapt",
+        "image_shape": "default",
+        "show_secondary_image": true,
+        "show_vendor": false,
+        "show_rating": false,
+        "quick_add": "none",
+        "enable_filtering": true,
+        "filter_type": "horizontal",
+        "enable_sorting": true,
+        "padding_top": 36,
+        "padding_bottom": 36
+      }
+    },
+    "custom_liquid_4kWTX9": {
+      "type": "custom-liquid",
+      "name": "t:sections.custom-liquid.presets.name",
+      "settings": {
+        "custom_liquid": "<div class=\"essential-banners-block\" id=\"3155731a-a6dd-44e4-9299-5c9ed71e7bcf\"></div>\n\n<style>\n/* 1. Force the outer wrapper to center instead of \"space-between\" */\n[id=\"3155731a-a6dd-44e4-9299-5c9ed71e7bcf\"] {\n  display: flex !important;\n  justify-content: center !important; /* Overrides the 'space-between' I see in your screenshot */\n  width: 100% !important;\n}\n\n/* 2. Shrink the inner container so it doesn't take up the whole screen */\n[id=\"3155731a-a6dd-44e4-9299-5c9ed71e7bcf\"] .icon-block-container {\n  display: flex !important;\n  width: auto !important;\n  max-width: fit-content !important;\n  margin: 0 auto !important;\n  gap: 30px !important; /* <--- THIS IS YOUR SPACING. Decrease for closer, increase for further. */\n  justify-content: center !important;\n}\n\n/* 3. Ensure individual blocks don't stretch */\n[id=\"3155731a-a6dd-44e4-9299-5c9ed71e7bcf\"] .icon-block {\n  width: auto !important;\n  flex: 0 0 auto !important;\n  margin: 0 !important;\n}\n\n/* 4. Keep your icon sizing */\n[id=\"3155731a-a6dd-44e4-9299-5c9ed71e7bcf\"] img {\n  height: 44px !important;\n  width: auto !important;\n}\n\n/* Mobile: shrink the gap so they fit on one line */\n@media (max-width: 768px) {\n  [id=\"3155731a-a6dd-44e4-9299-5c9ed71e7bcf\"] .icon-block-container {\n    gap: 15px !important;\n  }\n}\n</style>",
+        "color_scheme": "",
+        "padding_top": 40,
+        "padding_bottom": 52
+      }
+    }
+  },
+  "order": [
+    "banner",
+    "product-grid",
+    "custom_liquid_4kWTX9"
+  ]
+}
