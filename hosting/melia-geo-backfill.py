@@ -32,8 +32,8 @@ def gget(url):
     with urllib.request.urlopen(req, timeout=60) as r:
         return json.loads(r.read().decode() or "{}")
 
-# NOTE: Klaviyo wants the datetime UNQUOTED in the filter
-q = urllib.parse.urlencode({"filter": f"greater-or-equal(created,{since})", "page[size]": "100"})
+# NOTE: created allows only greater-than/less-than, datetime UNQUOTED
+q = urllib.parse.urlencode({"filter": f"greater-than(created,{since})", "page[size]": "100"})
 url = f"{BASE}/profiles/?{q}"
 empties, scanned = [], 0
 try:
