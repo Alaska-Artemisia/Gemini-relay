@@ -8,7 +8,7 @@
     <string>/usr/bin/python3</string>
     <string>/Users/Foongbear/melia-geo-backfill.py</string>
   </array>
-  <key>StartInterval</key><integer>3600</integer>
+  <key>StartInterval</key><integer>86400</integer>
   <key>RunAtLoad</key><true/>
   <key>StandardOutPath</key><string>/Users/Foongbear/Library/Logs/melia-geo-backfill.log</string>
   <key>StandardErrorPath</key><string>/Users/Foongbear/Library/Logs/melia-geo-backfill.log</string>
