@@ -1,27 +1,27 @@
 #!/usr/bin/env python3
-# Me + Lia - geo backfill. Hourly: any profile still missing a country -> United States.
-# Surgical (location only). Idempotent. Key read from your shell profile at runtime,
-# never stored in this file or the plist.
+# Me + Lia - geo backfill. Daily: any profile still missing a country -> Dallas, Texas, US.
+# Dallas gives Klaviyo a Central-time location so recipient-local sends fire on US time.
+# Surgical (location only). Idempotent. Key read from your shell profile at runtime.
 import json, subprocess, urllib.request, urllib.error, urllib.parse, datetime
 
 def get_key():
-    out = subprocess.run(
+    return subprocess.run(
         ['/bin/zsh','-c',
          'source ~/.zshrc 2>/dev/null; source ~/.zprofile 2>/dev/null; '
          'source ~/.bash_profile 2>/dev/null; printf %s "$KLAVIYO_KEY"'],
         capture_output=True, text=True).stdout.strip()
-    return out
 
 KEY = get_key()
 REV = "2025-01-15"
 BASE = "https://a.klaviyo.com/api"
+LOC = {"city": "Dallas", "region": "Texas", "country": "United States"}
 now = datetime.datetime.now(datetime.timezone.utc)
 def ts(): return now.strftime("%Y-%m-%dT%H:%M:%SZ")
 if not KEY:
     print(f"{ts()} ERROR: KLAVIYO_KEY not found in shell profile"); raise SystemExit(1)
 
-LOOKBACK_DAYS = 7      # re-scan a week so nothing slips through a missed run
-GRACE_MIN     = 60     # only stamp profiles >60 min old (let Klaviyo IP-geo resolve first)
+LOOKBACK_DAYS = 7      # re-scan a week so a missed daily run never loses anyone
+GRACE_MIN     = 60     # let Klaviyo IP-geo resolve first; only stamp empties older than this
 since = (now - datetime.timedelta(days=LOOKBACK_DAYS)).strftime("%Y-%m-%dT%H:%M:%SZ")
 grace = now - datetime.timedelta(minutes=GRACE_MIN)
 
@@ -32,8 +32,8 @@ def gget(url):
     with urllib.request.urlopen(req, timeout=60) as r:
         return json.loads(r.read().decode() or "{}")
 
-# page through profiles created in the lookback window
-q = urllib.parse.urlencode({"filter": f'greater-or-equal(created,"{since}")', "page[size]": "100"})
+# NOTE: Klaviyo wants the datetime UNQUOTED in the filter
+q = urllib.parse.urlencode({"filter": f"greater-or-equal(created,{since})", "page[size]": "100"})
 url = f"{BASE}/profiles/?{q}"
 empties, scanned = [], 0
 try:
@@ -59,8 +59,7 @@ except urllib.error.HTTPError as e:
 if not empties:
     print(f"{ts()} scanned {scanned} recent profiles, 0 missing country"); raise SystemExit(0)
 
-profiles = [{"type": "profile",
-             "attributes": {"email": e, "location": {"country": "United States"}}} for e in empties]
+profiles = [{"type": "profile", "attributes": {"email": e, "location": LOC}} for e in empties]
 body = {"data": {"type": "profile-bulk-import-job",
                  "attributes": {"profiles": {"data": profiles}}}}
 req = urllib.request.Request(f"{BASE}/profile-bulk-import-jobs/",
@@ -71,6 +70,6 @@ req.add_header("accept", "application/json")
 try:
     with urllib.request.urlopen(req, timeout=60) as r:
         jid = json.loads(r.read().decode() or "{}").get("data", {}).get("id", "?")
-    print(f"{ts()} scanned {scanned}, stamped {len(empties)} -> United States (job {jid})")
+    print(f"{ts()} scanned {scanned}, stamped {len(empties)} -> Dallas, Texas, US (job {jid})")
 except urllib.error.HTTPError as e:
     print(f"{ts()} ERROR import {e.code}: {e.read().decode()[:300]}")
