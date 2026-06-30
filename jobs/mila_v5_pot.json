@@ -1,0 +1,9 @@
+{
+  "filename": "mila_v5_pot.png",
+  "model": "gemini-2.5-flash-image",
+  "outputDir": "/Users/Foongbear/Library/CloudStorage/GoogleDrive-da@heyleyholdings.com/Shared drives/Me + Lia/Content/3. Gemini Working Folder",
+  "images": [
+    "/Users/Foongbear/Library/CloudStorage/GoogleDrive-da@heyleyholdings.com/Shared drives/Me + Lia/Content/3. Gemini Working Folder/mila_v4_shutters.png"
+  ],
+  "prompt": "You are given a photograph. Preserve it almost entirely: keep the woman EXACTLY as she is, same face, hair, body, pose and her deep red dress with white polka dots, ruffled straps and gathered neckline; do not alter or recolour the dress. Keep the warm sunny lighting, the soft palm-frond shadow on the wall, the colour grade and the overall composition identical. Make only these changes: (1) Make the timber shutter on the right noticeably more rustic and weathered: faded and chipped sage-green paint peeling in places, aged grey wood grain showing through, small cracks and old rusted metal hinges. (2) Add a weathered terracotta pot holding a small olive plant in the bottom-left corner, partially cropped by the left frame edge, sitting on the stone ground. Let a few small dried leaves rest on the ground nearby for realism. Keep everything photorealistic and seamless, matching the existing sunlight and shadow direction."
+}
