@@ -1,0 +1,9 @@
+{
+  "filename": "mila_v2_coast.png",
+  "model": "gemini-2.5-flash-image",
+  "outputDir": "/Users/Foongbear/Library/CloudStorage/GoogleDrive-da@heyleyholdings.com/Shared drives/Me + Lia/Content/3. Gemini Working Folder",
+  "images": [
+    "/Users/Foongbear/Library/CloudStorage/GoogleDrive-da@heyleyholdings.com/Shared drives/Me + Lia/Content/3. Gemini Working Folder/mila_red_src.jpg"
+  ],
+  "prompt": "A full-length editorial fashion photograph of the exact woman in the reference image. Keep her face, hair, body and her red dress faithful to the reference, and keep the dress its true rich RED with the same design \u2014 never pink or orange. She is photographed on location on a coastal stone terrace with a low balustrade and soft out-of-focus blue sea and sky behind her. Make this ONE cohesive real photograph, fully integrated into the environment \u2014 NOT a cut-out pasted on a backdrop. Relight her entirely to match the scene: bright soft diffused seaside light, gentle and slightly cool with warm skin tones, soft shadow at her feet. Cast a realistic grounding contact shadow at her feet plus a natural cast shadow in the scene's light direction so she is truly standing in the space. Let environmental colour bounce softly onto her skin, hair and the edges of the dress. Match perspective, camera height, depth of field, lens character, grain and colour grade between her and the surroundings so they read as a single capture. Light-wrap her edges naturally \u2014 no hard halo, no leftover studio background. Vertical full-length portrait, shallow depth of field, natural daylight, premium slow-fashion editorial mood."
+}
