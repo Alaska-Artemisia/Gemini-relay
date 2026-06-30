@@ -1,9 +1,0 @@
-{
-  "filename": "mila_bg4_coast.png",
-  "model": "gemini-2.5-flash-image",
-  "outputDir": "/Users/Foongbear/Library/CloudStorage/GoogleDrive-da@heyleyholdings.com/Shared drives/Me + Lia/Content/3. Gemini Working Folder",
-  "images": [
-    "/Users/Foongbear/Library/CloudStorage/GoogleDrive-da@heyleyholdings.com/Shared drives/Me + Lia/Content/3. Gemini Working Folder/mila_red_src.jpg"
-  ],
-  "prompt": "Replace ONLY the background behind the woman. Keep the woman, her pose, her face, her hair and her red dress exactly as in the provided image. Do not alter, recolor, restyle or re-pattern the dress; preserve its rich red color precisely and never shift it toward pink or orange. Photorealistic, natural daylight matching the soft light on the subject, editorial e-commerce fashion look, shallow depth of field, full-length vertical portrait. New background: a coastal terrace with a warm stone balustrade and, beyond it, soft out-of-focus blue sea and sky, gentle sun, a relaxed seaside-holiday feeling."
-}
