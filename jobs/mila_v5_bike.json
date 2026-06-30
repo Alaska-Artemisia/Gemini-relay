@@ -1,9 +1,0 @@
-{
-  "filename": "mila_v5_bike.png",
-  "model": "gemini-2.5-flash-image",
-  "outputDir": "/Users/Foongbear/Library/CloudStorage/GoogleDrive-da@heyleyholdings.com/Shared drives/Me + Lia/Content/3. Gemini Working Folder",
-  "images": [
-    "/Users/Foongbear/Library/CloudStorage/GoogleDrive-da@heyleyholdings.com/Shared drives/Me + Lia/Content/3. Gemini Working Folder/mila_v4_shutters.png"
-  ],
-  "prompt": "You are given a photograph. Preserve it almost entirely: keep the woman EXACTLY as she is, same face, hair, body, pose and her deep red dress with white polka dots, ruffled straps and gathered neckline; do not alter or recolour the dress. Keep the warm sunny lighting, the soft palm-frond shadow on the wall, the colour grade and the overall composition identical. Make only these changes: (1) Make the timber shutter on the right noticeably more rustic and weathered: faded and chipped sage-green paint peeling in places, aged grey wood grain showing through, small cracks and old rusted metal hinges. (2) Add the partially visible front wheel and handlebar of an old vintage bicycle leaning in the bottom-left corner, cropped by the frame edge. Add a small terracotta pot at the base of the shutter for a lived-in feel. Keep everything photorealistic and seamless, matching the existing sunlight and shadow direction."
-}
