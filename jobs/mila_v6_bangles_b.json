@@ -1,9 +1,0 @@
-{
-  "filename": "mila_v6_bangles_b.png",
-  "model": "gemini-2.5-flash-image",
-  "outputDir": "/Users/Foongbear/Library/CloudStorage/GoogleDrive-da@heyleyholdings.com/Shared drives/Me + Lia/Content/3. Gemini Working Folder",
-  "images": [
-    "/Users/Foongbear/Library/CloudStorage/GoogleDrive-da@heyleyholdings.com/Shared drives/Me + Lia/Content/3. Gemini Working Folder/mila_v5_pot.png"
-  ],
-  "prompt": "You are given a photograph. Keep EVERYTHING exactly the same: her face, hair, pose, the deep red polka-dot dress, the terracotta olive pot, the weathered green shutter, the warm plaster wall, the lighting, shadows and composition are all unchanged. Make ONE addition only: on her right forearm and wrist, the arm on the LEFT side of the frame as we look at it, hanging at her side near the pocket, add a stack of several thin silver bangles together with a slim silver watch and a simple silver ring in a casual layered 'Mikuta' style. The silver must catch the warm natural light realistically with soft reflections and tiny cast shadows on her skin, sitting naturally around the wrist. Photorealistic and seamless, matching the existing warm light direction and colour grade. Do NOT alter her other arm, her hands, the dress, or anything else in the frame."
-}
