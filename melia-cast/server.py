@@ -34,6 +34,9 @@ Env vars (set these in Railway, NEVER in code):
   MC_TIMEZONE            Australia/Melbourne (default)
   MCP_SHARED_SECRET      a long random string; Claude sends it as a Bearer token
   PORT                   provided by Railway
+  RELAY_GITHUB_PAT       GitHub PAT (Contents R/W on Alaska-Artemisia/Gemini-relay)
+  META_ADS_TOKEN         Meta ads_read token (long-lived / System User — a
+                         Graph Explorer token expires in ~1h). For get_meta_audiences.
 """
 
 import hashlib
@@ -319,6 +322,145 @@ async def schedule_batch(posts: list[dict], pace_seconds: float = 2.0) -> dict:
 #                             scheduled_publish_time=<unix>, link/message/photo
 # async def ig_publish_now(...): POST /{IG_USER_ID}/media (image_url, caption)
 #                                -> POST /{IG_USER_ID}/media_publish
+
+
+
+# ---------------------------------------------------------------------------
+# Meta (Facebook) Ads — read-only Custom Audience reader (phase-2a)
+# Reads audiences over the Graph API so we never have to browse Ads Manager.
+# Answers "pixel or customer-list (Klaviyo)?" and "are purchasers excluded?"
+# straight from each audience's rule. Read-only; changes nothing.
+# ---------------------------------------------------------------------------
+GRAPH = "https://graph.facebook.com/v21.0"
+META_ACCOUNT = os.getenv("META_AD_ACCOUNT", "act_1886177598841143")
+
+_SUBTYPE_PLAIN = {
+    "WEBSITE": "pixel / website  (NOT Klaviyo)",
+    "CUSTOM": "customer list  (uploaded/synced - e.g. Klaviyo or CSV)",
+    "LOOKALIKE": "lookalike",
+    "ENGAGEMENT": "IG / FB engagement",
+    "OFFLINE_CONVERSION": "offline conversion",
+}
+
+
+def _rule_excludes_purchasers(rule: Any) -> bool:
+    """True if the audience rule has an exclusion referencing a Purchase event."""
+    if not rule:
+        return False
+    try:
+        r = json.loads(rule) if isinstance(rule, str) else rule
+    except Exception:
+        return "purchase" in str(rule).lower()
+    return "purchase" in json.dumps(r.get("exclusions", "")).lower()
+
+
+@mcp.tool()
+async def get_meta_audiences(name_contains: str = "", limit: int = 200) -> dict:
+    """Read Meta Custom Audiences (read-only) for the Me + Lia ad account.
+
+    For each audience: name, plain-English source (pixel vs customer list /
+    Klaviyo), whether purchasers are excluded, retention window, approx size,
+    and the raw rule. Optional case-insensitive name-substring filter.
+
+    Requires env var META_ADS_TOKEN (ads_read). Use a long-lived / System User
+    token; a Graph Explorer token expires within ~1 hour.
+    """
+    token = os.getenv("META_ADS_TOKEN", "")
+    if not token:
+        return {"ok": False, "error": "META_ADS_TOKEN not set in Railway env. "
+                "Add a long-lived ads_read token and redeploy."}
+
+    fields = ("id,name,subtype,description,retention_days,"
+              "approximate_count_lower_bound,operation_status,data_source,rule")
+    url = (f"{GRAPH}/{META_ACCOUNT}/customaudiences"
+           f"?fields={fields}&limit={min(limit, 200)}&access_token={token}")
+
+    out: list[dict] = []
+    try:
+        async with httpx.AsyncClient(timeout=TIMEOUT) as c:
+            while url:
+                r = await c.get(url)
+                data = r.json()
+                if "error" in data:
+                    return {"ok": False,
+                            "error": data["error"].get("message", data["error"])}
+                for a in data.get("data", []):
+                    nm = a.get("name", "")
+                    if name_contains and name_contains.lower() not in nm.lower():
+                        continue
+                    subtype = a.get("subtype", "")
+                    status = a.get("operation_status")
+                    out.append({
+                        "name": nm,
+                        "id": a.get("id"),
+                        "source": _SUBTYPE_PLAIN.get(subtype, subtype or "unknown"),
+                        "from_klaviyo_or_upload": subtype == "CUSTOM",
+                        "excludes_purchasers": _rule_excludes_purchasers(a.get("rule")),
+                        "retention_days": a.get("retention_days"),
+                        "approx_size": a.get("approximate_count_lower_bound"),
+                        "status": status.get("description")
+                                  if isinstance(status, dict) else status,
+                        "rule": a.get("rule"),
+                    })
+                url = (data.get("paging", {}) or {}).get("next")
+    except Exception as e:
+        return {"ok": False, "error": f"{type(e).__name__}: {e}"}
+
+    return {"ok": True, "account": META_ACCOUNT, "count": len(out), "audiences": out}
+
+
+# ---------------------------------------------------------------------------
+# Relay job dispatch — write a job/asset file into the Gemini-relay repo so the
+# Mac-side watcher can pick it up. Uses the server-side PAT; no token in chat.
+# NOTE: the running Mac watcher consumes IMAGE + FETCH jobs only. A browser-job
+# written here will sit unconsumed until a browser runner is added to the watcher.
+# ---------------------------------------------------------------------------
+GH_REPO = os.getenv("RELAY_REPO", "Alaska-Artemisia/Gemini-relay")
+_JOB_PREFIXES = ("jobs/", "browser-jobs/", "fetch/", "hosting/")
+
+
+@mcp.tool()
+async def dispatch_relay_job(path: str, content: Any, message: str = "") -> dict:
+    """Write a job/asset file into the Gemini-relay repo (server-side PAT).
+
+    path    : repo path; must start with jobs/, browser-jobs/, fetch/ or hosting/
+    content : dict (serialized to JSON) or a raw string
+    Returns the commit sha and the raw.githubusercontent URL.
+
+    Requires env var RELAY_GITHUB_PAT. Only writes to the allowed job/asset
+    prefixes above - it will not touch code paths.
+    """
+    import base64
+    token = os.getenv("RELAY_GITHUB_PAT", "")
+    if not token:
+        return {"ok": False, "error": "RELAY_GITHUB_PAT not set in Railway env."}
+    if not path.startswith(_JOB_PREFIXES):
+        return {"ok": False, "error": f"path must start with one of {_JOB_PREFIXES}"}
+
+    body_text = content if isinstance(content, str) else json.dumps(content, indent=2)
+    b64 = base64.b64encode(body_text.encode()).decode()
+    api = f"https://api.github.com/repos/{GH_REPO}/contents/{path}"
+    headers = {"Authorization": f"Bearer {token}",
+               "Accept": "application/vnd.github+json"}
+    try:
+        async with httpx.AsyncClient(timeout=TIMEOUT) as c:
+            sha = None
+            g = await c.get(api, headers=headers)
+            if g.status_code == 200:
+                sha = g.json().get("sha")
+            payload = {"message": message or f"relay job: {path}", "content": b64}
+            if sha:
+                payload["sha"] = sha
+            p = await c.put(api, headers=headers, content=json.dumps(payload))
+            if p.status_code not in (200, 201):
+                return {"ok": False,
+                        "error": f"GitHub PUT {p.status_code}: {p.text[:300]}"}
+            j = p.json()
+            return {"ok": True, "path": path,
+                    "commit": (j.get("commit") or {}).get("sha"),
+                    "raw_url": (j.get("content") or {}).get("download_url")}
+    except Exception as e:
+        return {"ok": False, "error": f"{type(e).__name__}: {e}"}
 
 
 class _BearerAuth:
