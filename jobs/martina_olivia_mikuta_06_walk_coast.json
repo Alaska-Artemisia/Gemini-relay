@@ -1,0 +1,11 @@
+{
+  "aspectRatio": "4:5",
+  "filename": "martina_olivia_mikuta_06_walk_coast",
+  "images": [
+    "/Users/Foongbear/Library/CloudStorage/GoogleDrive-da@heyleyholdings.com/Shared drives/Me + Lia/Content/3. Gemini Working Folder/martina_milos_olivia_v2.png",
+    "/Users/Foongbear/Library/CloudStorage/GoogleDrive-da@heyleyholdings.com/Shared drives/Me + Lia/Content/3. Gemini Working Folder/olivia_face_v2.png"
+  ],
+  "model": "gemini-2.5-flash-image",
+  "outputDir": "/Users/Foongbear/Library/CloudStorage/GoogleDrive-da@heyleyholdings.com/Shared drives/Me + Lia/Content/3. Gemini Working Folder",
+  "prompt": "Two reference images. IMAGE 1 shows Olivia in a navy-and-white fine vertical pinstripe sleeveless tiered maxi dress \u2014 reproduce this exact dress. IMAGE 2 is Olivia's locked face. Generate a PHOTOREALISTIC editorial fashion photograph of Olivia (exact face/identity from IMAGE 2: warm golden-olive skin with light freckles, full lips, strong dark brows, long warm dark-brown softly-waved hair), wearing the exact navy pinstripe dress, natural balanced figure, modest natural bust. Pose: walking mid-stride along a coastal stone path, hem and hair moving in the sea breeze, looking out toward the water in profile, relaxed and natural. Setting: bleached coastal rocks and a low whitewashed wall, the deep blue Mediterranean sea and pale sky behind, warm late-afternoon light. Real photographic skin texture, natural anatomy, correct head-to-body proportion. Sharp on face and fabric."
+}
