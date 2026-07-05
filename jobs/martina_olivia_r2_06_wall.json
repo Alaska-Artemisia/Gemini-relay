@@ -1,0 +1,12 @@
+{
+  "aspectRatio": "4:5",
+  "filename": "martina_olivia_r2_06_wall",
+  "images": [
+    "/Users/Foongbear/Library/CloudStorage/GoogleDrive-da@heyleyholdings.com/Shared drives/Me + Lia/Content/3. Gemini Working Folder/olivia_face_v2.png",
+    "/Users/Foongbear/Library/CloudStorage/GoogleDrive-da@heyleyholdings.com/Shared drives/Me + Lia/Content/3. Gemini Working Folder/martina_milos_olivia_v2.png",
+    "/Users/Foongbear/Library/CloudStorage/GoogleDrive-da@heyleyholdings.com/Shared drives/Me + Lia/Content/3. Gemini Working Folder/Mikuta North Star/mikuta-milos-atmo-03392-ss26_2557ae16-e950-4402-995e-1da3e8d79b60.jpg"
+  ],
+  "model": "gemini-2.5-flash-image",
+  "outputDir": "/Users/Foongbear/Library/CloudStorage/GoogleDrive-da@heyleyholdings.com/Shared drives/Me + Lia/Content/3. Gemini Working Folder",
+  "prompt": "Three references. IMAGE 1 = Olivia's face, lock identity exactly (fuller face, warm golden-olive skin with freckles, full lips, strong dark brows, long warm dark-brown softly-waved hair). IMAGE 2 = the navy-and-white fine vertical pinstripe sleeveless tiered maxi dress, reproduce THIS exact dress. IMAGE 3 = MOOD/ENERGY reference ONLY: candid, undone, matte holiday feel; do NOT copy its garment, model or location. Generate a PHOTOREALISTIC candid holiday snapshot of Olivia wearing the navy pinstripe dress, leaning back against a sunlit whitewashed wall. A real girl on holiday LIVING in the dress, taking a breather. Pose: leaning on the wall, one foot propped against it, looking down and away as she pushes a strand of messy hair back off her face (NOT at camera), relaxed and unstudied. Matte skin, NO glow or sheen. Natural balanced figure, modest bust, easy asymmetric weight. Candid, not posed. Real photographic skin texture, natural anatomy, correct proportion. Warm late-afternoon side light, soft shadow on the wall."
+}
