@@ -1,56 +1,42 @@
 ---
 name: melia-visual-identity
-description: The locked Me + Lia visual identity system. Use whenever grading, generating, or approving any Me + Lia image (ads, PDP, lifestyle, grid). Covers the North Star grade PAIR (warm/cool), how to pick between them, world/model/kit rules, the production pipeline order, and the identity/pose learnings that stop AI drift. Supersedes single-grade MELIA_VISUAL_NORTHSTAR (rev b) and the MELIA_VISUAL_ENGINE grade sections.
-status: LOCKED 2026-07-05
+status: LOCKED 2026-07-05 (rev with 3b styling rules)
 ---
 
 # Me + Lia Visual Identity — North Star (final)
 
 ## 0. TL;DR
-- The grade is a matched pair, not one preset: v3 COOL (blues) and v3 WARM (creams). Same look, differing only in temperature and blue handling. Pick by garment palette.
-- Anchor = the Mikuta reference set (19-frame folder), tuned cooler and dual because Me + Lia's range is bluer than Mikuta's.
-- Grade is always the LAST step. Background/scene (Gemini) -> identity lock (two-image Gemini fusion) -> grade (Lightroom).
-- The look: warm-not-golden, matte with lifted-but-not-muddy blacks, blues/greens pulled down, reds and skin protected, fine grain. The garment is the only fully saturated element; the world stays a faded warm-neutral Mediterranean ground.
+- Grade = matched pair v3 COOL (blues) / v3 WARM (creams). Pick by garment palette. Anchor = Mikuta set, tuned cooler/dual for Me+Lia blues. Grade is the LAST step: scene (Gemini) -> identity lock (two-image Gemini fusion) -> grade (Lightroom).
+- Look: warm-not-golden, matte, lifted-but-not-muddy blacks, blues/greens down, reds+skin protected, fine grain. Garment is the only saturated element; world stays faded warm-neutral Mediterranean.
 
-## 1. The grade pair — how to choose
-One question at grade time: is the garment warm-palette or cool-palette?
-- Blue / navy / periwinkle / blue florals (Martina Midnight, Bianca Blue Blossom) -> v3 COOL (blues). Warm greys-out and dirties blue; cool keeps it true.
-- Cream / blush / red-pink florals / oatmeal (Bianca Cloud Rose, rose prints) -> v3 WARM (creams). Warmth makes cream rich and pinks/reds sing.
-- Genuinely neutral / mixed -> default to COOL (safer on whites).
-Proven by test: warm kills the blue on Martina/blue florals; cool slightly flattens cream/rose. Neither single grade serves the whole range, hence the pair. They share everything except Temp and the blue/aqua saturation, so the grid still reads as one campaign.
+## 1. Grade pair — choose by garment
+Blue/navy/periwinkle/blue florals -> v3 COOL. Cream/blush/red-pink florals/oatmeal -> v3 WARM. Neutral -> default COOL. Warm kills blue; cool slightly flattens cream. They share everything except Temp + blue/aqua sat.
 
-## 2. The numbers (frozen)
+## 2. Numbers (frozen)
 Files: MeLia_Mikuta_NorthStar_v3_COOL_blues.xmp, MeLia_Mikuta_NorthStar_v3_WARM_creams.xmp.
-Shared: Contrast -8, Highlights -28, Shadows +18, Whites -10, Blacks +5, Texture +5, Clarity -3, Vibrance +4, Saturation -5. Tone curve lifts black point to 16, rolls highlights to 244 (matte). HSL: Green sat -30/lum +5, Yellow sat -8, Red sat 0, Orange (skin guard) hue +4 / sat -6 / lum +8. Color grade: warm shadows (hue ~42, sat 10), warm-cream highlights. Grain 12/20/50. Sharpening 24, masking 40.
-COOL differs: Temp +3, Tint +2, Blue sat -7, Aqua -10, Blue lum +3.
-WARM differs: Temp +7, Tint +3, Blue sat -18, Aqua -14.
-Calibration reference: the Mikuta North Star folder (Drive). Recalibrate against those frames if revised; do NOT anchor to our own older graded frames.
+Shared: Contrast -8, Highlights -28, Shadows +18, Whites -10, Blacks +5, Texture +5, Clarity -3, Vibrance +4, Saturation -5; curve lifts black point to 16, highlights to 244 (matte); Green sat -30/lum +5, Yellow sat -8, Red 0, Orange (skin) hue +4/sat -6/lum +8; warm shadow colour grade; grain 12/20/50; sharpening 24, mask 40.
+COOL: Temp +3, Tint +2, Blue sat -7, Aqua -10, Blue lum +3.  WARM: Temp +7, Tint +3, Blue sat -18, Aqua -14.
 
 ## 3. World, model, kit
-- World: Mediterranean only — Old Towns, Harbours, Beaches, Coastal Rocks. Whitewashed Cycladic and warm-stone. No seamless studio as a final frame.
-- Models: the two locked identities, Olivia and Melissa. Consistency of face across the grid beats a one-off "prettier" face — a drifted pretty face is a FAIL.
-- Kit / styling: stacked silver, a single French market basket, black flat sandals, undone hair, minimal gold.
-- Framing/aspect: garment is the hero and only saturated element; quiet ground around it. Build ads at 4:5 (feed), 1:1, 9:16.
+Mediterranean only (Old Towns, Harbours, Beaches, Coastal Rocks), whitewashed Cycladic + warm stone, NO seamless studio final. Models: Olivia + Melissa (consistency beats a prettier one-off). Kit: stacked silver, one French market basket, black flat sandals, undone hair, minimal gold. Ads at 4:5 / 1:1 / 9:16.
 
-## 4. Production pipeline — ORDER IS LOAD-BEARING
-1. Scene / background / pose — Gemini relay render job. A single-image regen drifts identity; never trust it to hold a specific face on its own.
-2. Identity lock = "fusion" — a TWO-IMAGE Gemini relay job (NOT a separate app). A normal jobs/ render on gemini-2.5-flash-image with images: [scene, locked_face_portrait] and a prompt "COMPLETELY REPLACE the head/face in IMAGE 1 with IMAGE 2." Locked face portraits live in the Working Folder: olivia_face_v2.png and melissa_face_v1.png. Fire with dispatch_relay_job to jobs/<name>.json. There is NO FaceFusion desktop app — "fusion" always meant this two-image Gemini job.
-3. Grade — Lightroom, LAST. Apply the correct preset from the pair. Never grade before compositing (the "two photographs" tell).
-4. Per-image check (one pass): skin not orange, black garments not muddy, stray blue not too loud. Fix only that.
+## 3b. STYLING & ENERGY — "a girl in a good dress on holiday" (LOCKED, hard rules)
+Avoid posed/still/glowing catalog e-comm. Mikuta = CAUGHT MOMENTS, not modelling.
+- Eye contact UNDER 25%. Mostly looking away/down/off-frame/mid-laugh; ~1 in 5 meets the lens. Never a held presenting gaze.
+- On the go, LIVING in the dress: walking, mid-stride, climbing a step, turning, ducking under bougainvillea, coming out of a doorway, hem+hair in motion. Sitting/posing is the rare exception.
+- Slightly undone: hair a little messed/windblown/pushed back; strap shifted; hem creased from wear. Groomed-perfect is wrong.
+- Matte, never shiny/glowing: real skin, no dewy sheen, no beauty-glow, no glamour lighting. Holiday girl, not campaign face.
+- Having a good time: ease, warmth, candid body language, not a held expression. Snapshot energy.
+- Hands busy / weight asymmetric: touching a wall, holding skirt or basket, brushing hair; weight off one hip. Never stiff arms or primly folded hands.
+- ANCHOR to real Mikuta frames as pose/energy references in the render (feed 1-2 alongside identity + garment), not just prose.
 
-### 4a. Fusion job schema (proven — mart_c_olivia, martina_warm1_olivia_ff)
-{
-  "filename": "<output_name>",
-  "model": "gemini-2.5-flash-image",
-  "outputDir": "/Users/Foongbear/Library/CloudStorage/GoogleDrive-da@heyleyholdings.com/Shared drives/Me + Lia/Content/3. Gemini Working Folder",
-  "images": ["<Working Folder>/<scene>.png", "<Working Folder>/olivia_face_v2.png"],
-  "prompt": "Two images... IMAGE 1 scene... IMAGE 2 the specific person... COMPLETELY REPLACE the head and face of the woman in IMAGE 1 with IMAGE 2... keep everything else identical: pose, dress, body, hands, setting, light. ONLY head and facial identity change.",
-  "aspectRatio": "4:5"
-}
-images are local Mac paths (Working Folder), scene first, face second. Dispatch via dispatch_relay_job(path="jobs/<name>.json", content=<dict>). To make a NEW model's locked face: gemini-2.5-flash-image job with images: [] and a studio-portrait prompt (see olivia_face_v1 / melissa_face_v1).
+## 4. Pipeline (order load-bearing)
+1. Scene/pose = Gemini render. Single-image regen drifts identity.
+2. Identity lock = "fusion" = TWO-image Gemini job (gemini-2.5-flash-image), images [scene, olivia_face_v2.png], prompt "COMPLETELY REPLACE the head/face in IMAGE 1 with IMAGE 2". Locked faces in Working Folder: olivia_face_v2.png, melissa_face_v1.png. Fire via dispatch_relay_job to jobs/<name>.json. NO FaceFusion app.
+3. Grade = Lightroom LAST, correct preset from the pair.
+4. One-pass check: skin not orange, blacks not muddy, stray blue not loud.
 
-## 5. Notes
-Relay render/fusion works from chat via dispatch_relay_job. The gemini:generate_image MCP also renders directly (fallback when relay token is down); its aspectRatio rejects 4:5 — use 3:4.
+Fusion/render schema: {filename, model:"gemini-2.5-flash-image", outputDir:<Working Folder>, images:[<mac paths>], prompt, aspectRatio}. gemini:generate_image MCP is a direct fallback; it rejects 4:5, use 3:4.
 
-## 6. Housekeeping / provenance
-Supersedes single-grade MELIA_VISUAL_NORTHSTAR.md (rev b) grade section and MELIA_VISUAL_ENGINE.md grade section. Trash the superseded early North Star draft (1c5z0...). Grade anchor changed from "Martina Midnight + Clairo" to "the Mikuta North Star set," tuned cooler/dual to protect Me + Lia blues.
+## 6. Provenance
+Supersedes single-grade MELIA_VISUAL_NORTHSTAR (rev b) + MELIA_VISUAL_ENGINE grade sections. Anchor changed Martina+Clairo -> Mikuta set, cooler/dual for blues.
