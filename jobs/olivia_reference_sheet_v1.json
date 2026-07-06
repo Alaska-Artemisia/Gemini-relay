@@ -1,0 +1,10 @@
+{
+  "aspectRatio": "3:2",
+  "filename": "olivia_reference_sheet_v1",
+  "images": [
+    "/Users/Foongbear/Library/CloudStorage/GoogleDrive-da@heyleyholdings.com/Shared drives/Me + Lia/Content/3. Gemini Working Folder/olivia_face_v2.png"
+  ],
+  "model": "gemini-2.5-flash-image",
+  "outputDir": "/Users/Foongbear/Library/CloudStorage/GoogleDrive-da@heyleyholdings.com/Shared drives/Me + Lia/Content/3. Gemini Working Folder",
+  "prompt": "Create a photorealistic professional CHARACTER REFERENCE SHEET as a single high-resolution image, arranged as a clean 4x2 grid (4 columns, 2 rows, 8 equal cells; the 8th/last cell is empty plain background). The provided reference image is the EXACT person Olivia \u2014 preserve her identity, facial structure, skin tone, freckles, hair colour and style, eye colour and proportions with high fidelity in EVERY panel. It must be unmistakably the SAME person in all panels, zero drift. Olivia: warm honey-brown wavy shoulder-length hair with lighter sun-kissed balayage, green-hazel eyes, light freckles across nose and cheeks, warm golden-olive skin, full natural brows. Wardrobe in every panel: a cream off-white ribbed scoop-neck sleeveless tank top. Neutral expression in every panel, mouth closed, no smile. The 8 cells left-to-right, top row then bottom row: 1) Frontal \u2014 facing camera directly, shoulders square. 2) Three-quarter left \u2014 head turned about 30 degrees to her left. 3) Three-quarter right \u2014 head turned about 30 degrees to her right. 4) Left profile \u2014 full 90-degree side view (left), eye-level. 5) Right profile \u2014 full 90-degree side view (right), eye-level. 6) Slight downward tilt \u2014 head tilted down about 15 degrees, eyes toward camera. 7) Slight upward tilt \u2014 head tilted up about 15 degrees. 8) empty cell. Every panel: chest-up portrait, identical camera lens and framing, centered subject, identical even three-point studio lighting with soft shadows and no harsh contrast, seamless neutral light-grey background (#d8d8d8). Label each panel with its angle name in a small minimal sans-serif font. Ultra-sharp, studio quality, purely photorealistic, no stylisation."
+}
