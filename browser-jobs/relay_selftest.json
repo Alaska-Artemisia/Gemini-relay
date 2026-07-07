@@ -1,0 +1,17 @@
+{
+  "filename": "relay_selftest",
+  "width": 1280,
+  "height": 1600,
+  "steps": [
+    {
+      "do": "goto",
+      "url": "https://meandlia.com",
+      "waitUntil": "networkidle"
+    },
+    {
+      "do": "screenshot",
+      "name": "home",
+      "fullPage": true
+    }
+  ]
+}
