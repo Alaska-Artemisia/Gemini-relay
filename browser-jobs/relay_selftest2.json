@@ -1,0 +1,22 @@
+{
+  "filename": "relay_selftest2",
+  "width": 1280,
+  "height": 1600,
+  "steps": [
+    {
+      "do": "goto",
+      "url": "https://meandlia.com",
+      "waitUntil": "domcontentloaded",
+      "timeoutMs": 45000
+    },
+    {
+      "do": "waitMs",
+      "ms": 3500
+    },
+    {
+      "do": "screenshot",
+      "name": "home",
+      "fullPage": true
+    }
+  ]
+}
