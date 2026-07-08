@@ -1,0 +1,22 @@
+{
+  "filename": "meta_probe_auth",
+  "width": 1600,
+  "height": 1200,
+  "steps": [
+    {
+      "do": "goto",
+      "url": "https://adsmanager.facebook.com/adsmanager/manage/campaigns?act=1886177598841143",
+      "waitUntil": "domcontentloaded",
+      "timeoutMs": 45000
+    },
+    {
+      "do": "waitMs",
+      "ms": 6000
+    },
+    {
+      "do": "screenshot",
+      "name": "adsmgr",
+      "fullPage": true
+    }
+  ]
+}
