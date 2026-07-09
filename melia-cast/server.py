@@ -463,8 +463,39 @@ async def dispatch_relay_job(path: str, content: Any, message: str = "") -> dict
         return {"ok": False, "error": f"{type(e).__name__}: {e}"}
 
 
+class _HostRewrite:
+    """Pure-ASGI shim: force the inbound Host to 'localhost' so FastMCP's
+    streamable-HTTP DNS-rebinding / TrustedHost guard (on by default in
+    fastmcp>=2.3) accepts requests that Railway routed by the real public
+    host. Railway has already matched the service by the real Host header
+    before this runs, so rewriting it here is safe and affects nothing else.
+    """
+
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        if scope.get("type") == "http":
+            headers = [
+                (k, v) for (k, v) in (scope.get("headers") or [])
+                if k != b"host"
+            ]
+            headers.append((b"host", b"localhost"))
+            scope = dict(scope)
+            scope["headers"] = headers
+            # keep scope["server"] consistent with the rewritten host
+            if scope.get("server"):
+                scope["server"] = ("localhost", scope["server"][1])
+        await self.app(scope, receive, send)
+
+
 class _BearerAuth:
-    """Minimal pure-ASGI gate: require `Authorization: Bearer <secret>`."""
+    """Minimal pure-ASGI gate. Accepts the shared secret via EITHER
+    `Authorization: Bearer <secret>` OR a `?key=<secret>` query param
+    (Claude Desktop's custom-connector puts the secret in the URL, which is
+    why the Bearer-only check never matched). If no secret is configured,
+    the gate is a no-op (open server; posts still default to draft).
+    """
 
     def __init__(self, app, secret: str):
         self.app = app
@@ -474,7 +505,15 @@ class _BearerAuth:
         if scope.get("type") == "http" and self.secret:
             headers = dict(scope.get("headers") or [])
             got = headers.get(b"authorization", b"").decode()
-            if got != f"Bearer {self.secret}":
+            bearer_ok = got == f"Bearer {self.secret}"
+
+            key_ok = False
+            qs = scope.get("query_string", b"").decode()
+            if qs:
+                from urllib.parse import parse_qs
+                key_ok = self.secret in parse_qs(qs).get("key", [])
+
+            if not (bearer_ok or key_ok):
                 await send({"type": "http.response.start", "status": 401,
                             "headers": [(b"content-type", b"text/plain")]})
                 await send({"type": "http.response.body", "body": b"unauthorized"})
@@ -487,7 +526,7 @@ if __name__ == "__main__":
     secret = os.getenv("MCP_SHARED_SECRET", "")
 
     # Get FastMCP's streamable-HTTP ASGI app (method name varies by version),
-    # wrap it in the auth gate, and serve with uvicorn.
+    # wrap it: uvicorn -> _HostRewrite -> _BearerAuth -> FastMCP asgi.
     asgi = None
     for name in ("http_app", "streamable_http_app"):
         fn = getattr(mcp, name, None)
@@ -501,4 +540,5 @@ if __name__ == "__main__":
         mcp.run(transport="streamable-http", host="0.0.0.0", port=port)
     else:
         import uvicorn
-        uvicorn.run(_BearerAuth(asgi, secret), host="0.0.0.0", port=port)
+        uvicorn.run(_HostRewrite(_BearerAuth(asgi, secret)),
+                    host="0.0.0.0", port=port)
