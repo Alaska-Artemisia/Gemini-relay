@@ -1,0 +1,37 @@
+{
+  "type": "browser",
+  "filename": "clarity_confirm",
+  "headful": true,
+  "width": 1440,
+  "height": 900,
+  "steps": [
+    {
+      "do": "goto",
+      "url": "https://clarity.microsoft.com/projects/view/wdwgfvbixn/dashboard",
+      "waitUntil": "domcontentloaded",
+      "timeoutMs": 60000
+    },
+    {
+      "do": "waitMs",
+      "ms": 10000
+    },
+    {
+      "do": "click",
+      "selector": "text=Recordings"
+    },
+    {
+      "do": "waitMs",
+      "ms": 14000
+    },
+    {
+      "do": "screenshot",
+      "name": "clarity_confirm_recordings",
+      "fullPage": true
+    },
+    {
+      "do": "eval",
+      "as": "rec",
+      "script": "()=>{const q=s=>[...document.querySelectorAll(s)];const clip=e=>(e.outerHTML||'').slice(0,1600);const denied=/don.t have permission|doesn.t exist/i.test(document.body.innerText);const testids=[...new Set(q('[data-testid]').map(e=>e.getAttribute('data-testid')).filter(Boolean))].slice(0,50);const sel='[class*=session],[class*=recording],[class*=Session],[class*=Recording],[data-testid*=session],[data-testid*=recording],[data-testid*=card]';const cards=q(sel).slice(0,4).map(e=>({cls:String(e.className).slice(0,160),testid:e.getAttribute('data-testid'),html:clip(e)}));const shareBtns=q('button,a').filter(e=>/share/i.test((e.getAttribute('aria-label')||'')+(e.textContent||''))).map(e=>({t:(e.textContent||'').trim().slice(0,30),al:e.getAttribute('aria-label'),testid:e.getAttribute('data-testid')})).slice(0,8);return{url:location.href,title:document.title,denied:denied,testids:testids,cardCount:q(sel).length,cards:cards,shareBtns:shareBtns};}"
+    }
+  ]
+}
