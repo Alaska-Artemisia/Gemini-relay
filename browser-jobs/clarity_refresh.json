@@ -1,0 +1,49 @@
+{
+  "type": "browser",
+  "filename": "clarity_refresh",
+  "headful": true,
+  "width": 1440,
+  "height": 900,
+  "steps": [
+    {
+      "do": "goto",
+      "url": "https://clarity.microsoft.com/logout",
+      "waitUntil": "domcontentloaded",
+      "timeoutMs": 60000
+    },
+    {
+      "do": "waitMs",
+      "ms": 6000
+    },
+    {
+      "do": "goto",
+      "url": "https://clarity.microsoft.com/projects",
+      "waitUntil": "domcontentloaded",
+      "timeoutMs": 60000
+    },
+    {
+      "do": "waitMs",
+      "ms": 90000
+    },
+    {
+      "do": "goto",
+      "url": "https://clarity.microsoft.com/projects/view/wdwgfvbixn/dashboard",
+      "waitUntil": "domcontentloaded",
+      "timeoutMs": 60000
+    },
+    {
+      "do": "waitMs",
+      "ms": 10000
+    },
+    {
+      "do": "screenshot",
+      "name": "clarity_refresh",
+      "fullPage": true
+    },
+    {
+      "do": "eval",
+      "as": "chk",
+      "script": "()=>{const denied=/don.t have permission|doesn.t exist/i.test(document.body.innerText);return{url:location.href,denied:denied,title:document.title};}"
+    }
+  ]
+}
