@@ -1,0 +1,29 @@
+{
+  "type": "browser",
+  "filename": "clarity_recon2",
+  "headful": true,
+  "width": 1440,
+  "height": 900,
+  "steps": [
+    {
+      "do": "goto",
+      "url": "https://clarity.microsoft.com/projects",
+      "waitUntil": "domcontentloaded",
+      "timeoutMs": 60000
+    },
+    {
+      "do": "waitMs",
+      "ms": 12000
+    },
+    {
+      "do": "screenshot",
+      "name": "clarity_projects",
+      "fullPage": true
+    },
+    {
+      "do": "eval",
+      "as": "acct",
+      "script": "()=>{const q=s=>[...document.querySelectorAll(s)];const txt=e=>((e&&e.textContent)||'').trim().slice(0,80);const links=q('a').filter(a=>((a.getAttribute('href')||'').indexOf('/projects/view/')>=0)).map(a=>({name:txt(a),href:a.getAttribute('href')}));const re=/[a-z0-9._%+-]+@[a-z0-9.-]+[.][a-z]{2,}/i;const hints=[...new Set(q('[aria-label],[title]').map(e=>(e.getAttribute('aria-label')||e.getAttribute('title')||'')).filter(t=>re.test(t)))].slice(0,10);const be=[...new Set((document.body.innerText.match(/[a-z0-9._%+-]+@[a-z0-9.-]+[.][a-z]{2,}/gi)||[]))].slice(0,10);return{url:location.href,title:document.title,projectCount:links.length,projects:links.slice(0,20),accountHints:hints,bodyEmails:be};}"
+    }
+  ]
+}
