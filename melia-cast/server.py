@@ -686,9 +686,15 @@ async def create_meta_ad(
             r2 = await c.post(f"{GRAPH}/{account}/adcreatives", data=creative_spec)
             d2 = r2.json()
             if "error" in d2:
+                err = d2["error"]
                 return {"ok": False, "step": "creative",
                         "image_hash": image_hash,
-                        "error": d2["error"].get("message", str(d2["error"]))}
+                        "error": err.get("message", ""),
+                        "error_type": err.get("type", ""),
+                        "error_code": err.get("code", ""),
+                        "error_subcode": err.get("error_subcode", ""),
+                        "fbtrace": err.get("fbtrace_id", ""),
+                        "debug": str(d2)}
             creative_id = d2.get("id")
 
             # Step 3: Create ad (PAUSED initially)
