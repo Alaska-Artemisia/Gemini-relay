@@ -35,8 +35,11 @@ Env vars (set these in Railway, NEVER in code):
   MCP_SHARED_SECRET      a long random string; Claude sends it as a Bearer token
   PORT                   provided by Railway
   RELAY_GITHUB_PAT       GitHub PAT (Contents R/W on Alaska-Artemisia/Gemini-relay)
-  META_ADS_TOKEN         Meta ads_read token (long-lived / System User — a
-                         Graph Explorer token expires in ~1h). For get_meta_audiences.
+  META_ADS_TOKEN         Meta token with ads_management + ads_read scope
+                         (long-lived / System User — a Graph Explorer token
+                         expires in ~1h). Powers get_meta_audiences AND the
+                         full ad-creation stack (create_meta_campaign,
+                         create_meta_adset, create_meta_ad, create_meta_custom_audience).
 """
 
 import hashlib
@@ -459,6 +462,334 @@ async def dispatch_relay_job(path: str, content: Any, message: str = "") -> dict
             return {"ok": True, "path": path,
                     "commit": (j.get("commit") or {}).get("sha"),
                     "raw_url": (j.get("content") or {}).get("download_url")}
+    except Exception as e:
+        return {"ok": False, "error": f"{type(e).__name__}: {e}"}
+
+
+# ---------------------------------------------------------------------------
+# Meta Ads — full ad-creation stack via Graph API (phase 2b)
+# Four tools: create campaign → create ad set → create ad → create audience
+# All use META_ADS_TOKEN with ads_management scope. One call at a time.
+# ---------------------------------------------------------------------------
+
+
+@mcp.tool()
+async def create_meta_campaign(
+    name: str,
+    objective: str = "OUTCOME_SALES",
+    daily_budget_cents: int = 0,
+    lifetime_budget_cents: int = 0,
+    bid_strategy: str = "LOWEST_COST_WITHOUT_CAP",
+    special_ad_categories: str = "[]",
+    status: str = "PAUSED",
+) -> dict:
+    """Create a Meta campaign (PAUSED by default).
+
+    name                  : campaign name in Ads Manager
+    objective             : OUTCOME_SALES, OUTCOME_TRAFFIC, OUTCOME_AWARENESS,
+                            OUTCOME_ENGAGEMENT, OUTCOME_LEADS, OUTCOME_APP_PROMOTION
+    daily_budget_cents    : CBO daily budget in cents (e.g. 2000 = $20/day).
+                            Mutually exclusive with lifetime_budget_cents.
+                            Set either one for CBO; leave both 0 for ABO (budget on ad set).
+    lifetime_budget_cents : CBO lifetime budget in cents. Mutually exclusive with daily.
+    bid_strategy          : LOWEST_COST_WITHOUT_CAP (default), COST_CAP,
+                            LOWEST_COST_WITH_BID_CAP, LOWEST_COST_WITH_MIN_ROAS
+    special_ad_categories : JSON array string, e.g. '["HOUSING"]'. Default "[]".
+    status                : PAUSED (default) or ACTIVE
+
+    Returns {ok, campaign_id, name, status}.
+    """
+    token = os.getenv("META_ADS_TOKEN", "")
+    if not token:
+        return {"ok": False, "error": "META_ADS_TOKEN not set."}
+
+    params: dict[str, Any] = {
+        "name": name,
+        "objective": objective,
+        "special_ad_categories": special_ad_categories,
+        "status": status,
+        "buying_type": "AUCTION",
+        "access_token": token,
+    }
+    if daily_budget_cents > 0:
+        params["daily_budget"] = str(daily_budget_cents)
+        params["bid_strategy"] = bid_strategy
+    elif lifetime_budget_cents > 0:
+        params["lifetime_budget"] = str(lifetime_budget_cents)
+        params["bid_strategy"] = bid_strategy
+
+    try:
+        async with httpx.AsyncClient(timeout=httpx.Timeout(30.0)) as c:
+            r = await c.post(f"{GRAPH}/{META_ACCOUNT}/campaigns", data=params)
+            d = r.json()
+            if "error" in d:
+                return {"ok": False, "error": d["error"].get("message", str(d["error"]))}
+            return {"ok": True, "campaign_id": d.get("id"), "name": name, "status": status}
+    except Exception as e:
+        return {"ok": False, "error": f"{type(e).__name__}: {e}"}
+
+
+@mcp.tool()
+async def create_meta_adset(
+    name: str,
+    campaign_id: str,
+    daily_budget_cents: int = 0,
+    lifetime_budget_cents: int = 0,
+    optimization_goal: str = "OFFSITE_CONVERSIONS",
+    billing_event: str = "IMPRESSIONS",
+    bid_strategy: str = "LOWEST_COST_WITHOUT_CAP",
+    targeting: str = "",
+    promoted_object: str = "",
+    start_time: str = "",
+    end_time: str = "",
+    status: str = "PAUSED",
+    destination_type: str = "WEBSITE",
+) -> dict:
+    """Create a Meta ad set under an existing campaign (PAUSED by default).
+
+    name                  : ad set name in Ads Manager
+    campaign_id           : parent campaign ID
+    daily_budget_cents    : ABO daily budget in cents (only if campaign has no CBO budget).
+                            Mutually exclusive with lifetime_budget_cents.
+    lifetime_budget_cents : ABO lifetime budget in cents. Requires end_time.
+    optimization_goal     : OFFSITE_CONVERSIONS, LINK_CLICKS, REACH, IMPRESSIONS,
+                            LANDING_PAGE_VIEWS, CONVERSATIONS, VALUE, LEAD_GENERATION
+    billing_event         : IMPRESSIONS (default), LINK_CLICKS
+    bid_strategy          : LOWEST_COST_WITHOUT_CAP (default), COST_CAP, etc.
+    targeting             : JSON string targeting spec. e.g.
+                            '{"geo_locations":{"countries":["US"]},"age_min":25,"age_max":55}'
+                            Leave empty for Advantage+ (broad targeting).
+    promoted_object       : JSON string. For OUTCOME_SALES:
+                            '{"pixel_id":"YOUR_PIXEL","custom_event_type":"PURCHASE"}'
+    start_time            : ISO 8601 (e.g. "2026-07-12T00:00:00-0400"). Omit for immediate.
+    end_time              : ISO 8601. Required if using lifetime_budget.
+    status                : PAUSED (default) or ACTIVE
+    destination_type      : WEBSITE (default), SHOP_AUTOMATIC, MESSENGER, etc.
+
+    Returns {ok, adset_id, name, status}.
+    """
+    token = os.getenv("META_ADS_TOKEN", "")
+    if not token:
+        return {"ok": False, "error": "META_ADS_TOKEN not set."}
+
+    params: dict[str, Any] = {
+        "name": name,
+        "campaign_id": campaign_id,
+        "optimization_goal": optimization_goal,
+        "billing_event": billing_event,
+        "bid_strategy": bid_strategy,
+        "status": status,
+        "destination_type": destination_type,
+        "access_token": token,
+    }
+    if daily_budget_cents > 0:
+        params["daily_budget"] = str(daily_budget_cents)
+    elif lifetime_budget_cents > 0:
+        params["lifetime_budget"] = str(lifetime_budget_cents)
+    if targeting:
+        params["targeting"] = targeting
+    if promoted_object:
+        params["promoted_object"] = promoted_object
+    if start_time:
+        params["start_time"] = start_time
+    if end_time:
+        params["end_time"] = end_time
+
+    try:
+        async with httpx.AsyncClient(timeout=httpx.Timeout(30.0)) as c:
+            r = await c.post(f"{GRAPH}/{META_ACCOUNT}/adsets", data=params)
+            d = r.json()
+            if "error" in d:
+                return {"ok": False, "error": d["error"].get("message", str(d["error"]))}
+            return {"ok": True, "adset_id": d.get("id"), "name": name, "status": status}
+    except Exception as e:
+        return {"ok": False, "error": f"{type(e).__name__}: {e}"}
+
+
+@mcp.tool()
+async def create_meta_ad(
+    image_url: str,
+    ad_name: str,
+    primary_text: str,
+    headline: str,
+    link_url: str,
+    adset_id: str,
+    description: str = "",
+    call_to_action: str = "SHOP_NOW",
+    page_id: str = "736164559573286",
+    activate: bool = True,
+) -> dict:
+    """Create a single Meta ad with image, copy, and link under an existing
+    ad set. One ad at a time — never batch (error_subcode 1487390).
+
+    image_url   : public HTTPS URL of the ad image (Shopify CDN, etc.)
+    ad_name     : name shown in Ads Manager (e.g. "ASC - Valentina Shallows")
+    primary_text: body text above the image
+    headline    : short headline below the image
+    link_url    : click-through destination (e.g. https://meandlia.com/products/...)
+    adset_id    : existing ad set ID to create the ad under
+    description : short description text below the headline
+    call_to_action: CTA button (SHOP_NOW, LEARN_MORE, etc.)
+    page_id     : Facebook Page ID (defaults to Me + Lia)
+    activate    : True = set ad ACTIVE immediately; False = leave PAUSED
+
+    Returns {ok, ad_id, creative_id, image_hash, status} on success.
+    """
+    token = os.getenv("META_ADS_TOKEN", "")
+    if not token:
+        return {"ok": False, "error": "META_ADS_TOKEN not set."}
+
+    account = META_ACCOUNT
+
+    try:
+        async with httpx.AsyncClient(timeout=httpx.Timeout(30.0)) as c:
+            # Step 1: Upload image by URL → get image hash
+            r1 = await c.post(
+                f"{GRAPH}/{account}/adimages",
+                data={"url": image_url, "access_token": token},
+            )
+            d1 = r1.json()
+            if "error" in d1:
+                return {"ok": False, "step": "image_upload",
+                        "error": d1["error"].get("message", str(d1["error"]))}
+            images = d1.get("images", {})
+            if not images:
+                return {"ok": False, "step": "image_upload",
+                        "error": f"No image hash returned: {d1}"}
+            image_hash = list(images.values())[0].get("hash")
+            if not image_hash:
+                return {"ok": False, "step": "image_upload",
+                        "error": f"Hash missing from response: {d1}"}
+
+            # Step 2: Create ad creative
+            creative_spec = {
+                "name": ad_name,
+                "object_story_spec": json.dumps({
+                    "page_id": page_id,
+                    "link_data": {
+                        "image_hash": image_hash,
+                        "link": link_url,
+                        "message": primary_text,
+                        "name": headline,
+                        "description": description,
+                        "call_to_action": {
+                            "type": call_to_action,
+                            "value": {"link": link_url},
+                        },
+                    },
+                }),
+                "access_token": token,
+            }
+            r2 = await c.post(f"{GRAPH}/{account}/adcreatives", data=creative_spec)
+            d2 = r2.json()
+            if "error" in d2:
+                return {"ok": False, "step": "creative",
+                        "image_hash": image_hash,
+                        "error": d2["error"].get("message", str(d2["error"]))}
+            creative_id = d2.get("id")
+
+            # Step 3: Create ad (PAUSED initially)
+            ad_spec = {
+                "name": ad_name,
+                "adset_id": adset_id,
+                "creative": json.dumps({"creative_id": creative_id}),
+                "status": "PAUSED",
+                "access_token": token,
+            }
+            r3 = await c.post(f"{GRAPH}/{account}/ads", data=ad_spec)
+            d3 = r3.json()
+            if "error" in d3:
+                return {"ok": False, "step": "ad_create",
+                        "creative_id": creative_id, "image_hash": image_hash,
+                        "error": d3["error"].get("message", str(d3["error"]))}
+            ad_id = d3.get("id")
+
+            # Step 4: Activate if requested
+            final_status = "PAUSED"
+            if activate:
+                r4 = await c.post(
+                    f"{GRAPH}/{ad_id}",
+                    data={"status": "ACTIVE", "access_token": token},
+                )
+                d4 = r4.json()
+                if d4.get("success"):
+                    final_status = "ACTIVE"
+                else:
+                    final_status = f"PAUSED (activate failed: {d4})"
+
+            return {
+                "ok": True,
+                "ad_id": ad_id,
+                "creative_id": creative_id,
+                "image_hash": image_hash,
+                "ad_name": ad_name,
+                "status": final_status,
+                "link_url": link_url,
+            }
+
+    except Exception as e:
+        return {"ok": False, "error": f"{type(e).__name__}: {e}"}
+
+
+@mcp.tool()
+async def create_meta_custom_audience(
+    name: str,
+    description: str = "",
+    subtype: str = "WEBSITE",
+    rule: str = "",
+    retention_days: int = 30,
+    prefill: bool = True,
+    customer_file_source: str = "",
+) -> dict:
+    """Create a Meta Custom Audience.
+
+    name                : audience name in Ads Manager
+    description         : optional description
+    subtype             : WEBSITE (pixel-based, default), CUSTOM (customer list),
+                          ENGAGEMENT, LOOKALIKE
+    rule                : JSON rule spec for pixel audiences, e.g.
+                          '{"inclusions":{"operator":"or","rules":[
+                            {"event_sources":[{"id":"PIXEL_ID","type":"pixel"}],
+                             "retention_seconds":2592000,
+                             "filter":{"operator":"and","filters":[
+                               {"field":"url","operator":"i_contains","value":"products"}
+                             ]}}
+                          ]}}'
+                          Leave empty for customer-list audiences (upload separately).
+    retention_days      : lookback window (default 30). Max 180 for pixel audiences.
+    prefill             : True (default) = backfill with existing data
+    customer_file_source: for CUSTOM subtype: USER_PROVIDED_ONLY, PARTNER_PROVIDED_ONLY,
+                          BOTH_USER_AND_PARTNER_PROVIDED
+
+    Returns {ok, audience_id, name, subtype}.
+    """
+    token = os.getenv("META_ADS_TOKEN", "")
+    if not token:
+        return {"ok": False, "error": "META_ADS_TOKEN not set."}
+
+    params: dict[str, Any] = {
+        "name": name,
+        "subtype": subtype,
+        "access_token": token,
+    }
+    if description:
+        params["description"] = description
+    if rule:
+        params["rule"] = rule
+    if retention_days and subtype == "WEBSITE":
+        params["retention_days"] = str(retention_days)
+    if prefill:
+        params["prefill"] = "true"
+    if customer_file_source:
+        params["customer_file_source"] = customer_file_source
+
+    try:
+        async with httpx.AsyncClient(timeout=httpx.Timeout(30.0)) as c:
+            r = await c.post(f"{GRAPH}/{META_ACCOUNT}/customaudiences", data=params)
+            d = r.json()
+            if "error" in d:
+                return {"ok": False, "error": d["error"].get("message", str(d["error"]))}
+            return {"ok": True, "audience_id": d.get("id"), "name": name, "subtype": subtype}
     except Exception as e:
         return {"ok": False, "error": f"{type(e).__name__}: {e}"}
 
