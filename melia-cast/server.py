@@ -643,40 +643,43 @@ async def create_meta_ad(
 
     try:
         async with httpx.AsyncClient(timeout=httpx.Timeout(30.0)) as c:
-            # Step 1: Upload image by URL → get image hash
-            r1 = await c.post(
-                f"{GRAPH}/{account}/adimages",
-                data={"url": image_url, "access_token": token},
-            )
-            d1 = r1.json()
-            if "error" in d1:
-                return {"ok": False, "step": "image_upload",
-                        "error": d1["error"].get("message", str(d1["error"]))}
-            images = d1.get("images", {})
-            if not images:
-                return {"ok": False, "step": "image_upload",
-                        "error": f"No image hash returned: {d1}"}
-            image_hash = list(images.values())[0].get("hash")
-            if not image_hash:
-                return {"ok": False, "step": "image_upload",
-                        "error": f"Hash missing from response: {d1}"}
+            # Step 1: Try uploading image by URL for hash (preferred).
+            # Falls back to image_url in creative if /adimages is blocked.
+            image_hash = None
+            try:
+                r1 = await c.post(
+                    f"{GRAPH}/{account}/adimages",
+                    data={"url": image_url, "access_token": token},
+                )
+                d1 = r1.json()
+                if "error" not in d1:
+                    images = d1.get("images", {})
+                    if images:
+                        image_hash = list(images.values())[0].get("hash")
+            except Exception:
+                pass  # fall through to image_url path
 
-            # Step 2: Create ad creative
+            # Step 2: Create ad creative (hash path or URL path)
+            link_data: dict[str, Any] = {
+                "link": link_url,
+                "message": primary_text,
+                "name": headline,
+                "description": description,
+                "call_to_action": {
+                    "type": call_to_action,
+                    "value": {"link": link_url},
+                },
+            }
+            if image_hash:
+                link_data["image_hash"] = image_hash
+            else:
+                link_data["picture"] = image_url
+
             creative_spec = {
                 "name": ad_name,
                 "object_story_spec": json.dumps({
                     "page_id": page_id,
-                    "link_data": {
-                        "image_hash": image_hash,
-                        "link": link_url,
-                        "message": primary_text,
-                        "name": headline,
-                        "description": description,
-                        "call_to_action": {
-                            "type": call_to_action,
-                            "value": {"link": link_url},
-                        },
-                    },
+                    "link_data": link_data,
                 }),
                 "access_token": token,
             }
