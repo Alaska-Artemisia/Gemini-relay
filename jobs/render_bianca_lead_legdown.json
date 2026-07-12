@@ -1,0 +1,11 @@
+{
+  "aspectRatio": "4:5",
+  "filename": "bianca_lead_legdown_v1.png",
+  "images": [
+    "/Users/Foongbear/Library/CloudStorage/GoogleDrive-da@heyleyholdings.com/Shared drives/Me + Lia/Content/3. Gemini Working Folder/bianca_lead_imperfections_v1.png"
+  ],
+  "model": "gemini-2.5-flash-image",
+  "outputDir": "/Users/Foongbear/Library/CloudStorage/GoogleDrive-da@heyleyholdings.com/Shared drives/Me + Lia/Content/3. Gemini Working Folder",
+  "prompt": "Keep this photograph almost entirely as-is \u2014 same woman, same identity and face, same natural skin texture and light freckles, same blue floral dress, same whitewashed courtyard, same dramatic directional lighting and warm faded-film grade. Keep both hands resting on her hips exactly as they are. Keep her hair natural and softly tousled but tidy and pretty \u2014 NOT messy, wild, or dishevelled; relaxed and groomed. Make ONE pose change: lower her lifted left leg (her left side, on the RIGHT of the image) so that foot comes down and rests flat and planted on the ground, a natural relaxed standing stance with a slight easy weight shift \u2014 the foot stays fully on the floor, not lifted on the toes. As the leg lowers, let the skirt fall naturally: the hem drapes straight down to its normal mid-calf midi length on that side, no longer hitched or riding up on the thigh, with no hand touching it. Natural, elegant, composed. Photorealistic, correct anatomy, seamless, believable.",
+  "seed": 12
+}
