@@ -1,0 +1,10 @@
+{
+  "aspectRatio": "4:5",
+  "filename": "tassia_lead_decluttered_v1.png",
+  "images": [
+    "/Users/Foongbear/Library/CloudStorage/GoogleDrive-da@heyleyholdings.com/Shared drives/Me + Lia/Content/3. Gemini Working Folder/Tassia for claude.png"
+  ],
+  "model": "gemini-2.5-flash-image",
+  "outputDir": "/Users/Foongbear/Library/CloudStorage/GoogleDrive-da@heyleyholdings.com/Shared drives/Me + Lia/Content/3. Gemini Working Folder",
+  "prompt": "Keep the person, her pose, hair, dress, bag, sandals and body completely unchanged \u2014 do not alter or repaint the model or the garment in any way. Only edit the background: simplify and de-clutter it. Remove the pink flowering bougainvillea vine climbing the left wall, and remove most of the potted plants and terracotta pots lining the right side of the lane \u2014 leave at most one small olive plant far in the background. Keep the warm ochre and terracotta plaster walls, the weathered green shutters, and the worn cobblestone lane exactly as they are, just cleaner and less busy. Preserve the original lighting, warm faded-film grade, colour and grain. Photorealistic, seamless."
+}
