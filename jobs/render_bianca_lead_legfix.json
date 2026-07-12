@@ -1,0 +1,10 @@
+{
+  "aspectRatio": "4:5",
+  "filename": "bianca_lead_legfix_v1.png",
+  "images": [
+    "/Users/Foongbear/Library/CloudStorage/GoogleDrive-da@heyleyholdings.com/Shared drives/Me + Lia/Content/3. Gemini Working Folder/bianca_lead_imperfections_v1.png"
+  ],
+  "model": "gemini-2.5-flash-image",
+  "outputDir": "/Users/Foongbear/Library/CloudStorage/GoogleDrive-da@heyleyholdings.com/Shared drives/Me + Lia/Content/3. Gemini Working Folder",
+  "prompt": "Keep this photograph almost entirely as-is \u2014 same woman, same identity and face, same natural skin texture and freckles, same tousled hair, same blue floral dress, same whitewashed courtyard background, same dramatic directional lighting and warm faded-film grade. Make ONLY these pose corrections so the lifted hem looks physically natural instead of unexplained: (1) Move her left hand \u2014 her left side, on the RIGHT side of the image, currently resting on her hip \u2014 down to rest on her left thigh, with the fingers lightly gathering and holding a fold of the floral dress fabric, so it is clearly her hand holding the hem up at that height. (2) Raise her lifted left foot to a sharper angle: higher up on the ball of the foot and toes with the heel lifted more, so the bent knee, raised thigh and high hemline read as consistent and physically natural. Keep her right hand where it is, and keep the rest of the body, the dress print, the background and the lighting unchanged. Photorealistic, correct natural anatomy, seamless, believable."
+}
