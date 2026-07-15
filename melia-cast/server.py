@@ -523,7 +523,16 @@ async def create_meta_campaign(
             r = await c.post(f"{GRAPH}/{META_ACCOUNT}/campaigns", data=params)
             d = r.json()
             if "error" in d:
-                return {"ok": False, "error": d["error"].get("message", str(d["error"]))}
+                err = d["error"]
+                return {"ok": False, "step": "campaign",
+                        "error": err.get("message", ""),
+                        "error_type": err.get("type", ""),
+                        "error_code": err.get("code", ""),
+                        "error_subcode": err.get("error_subcode", ""),
+                        "error_user_title": err.get("error_user_title", ""),
+                        "error_user_msg": err.get("error_user_msg", ""),
+                        "fbtrace": err.get("fbtrace_id", ""),
+                        "sent_params": {k: v for k, v in params.items() if k != "access_token"}}
             return {"ok": True, "campaign_id": d.get("id"), "name": name, "status": status}
     except Exception as e:
         return {"ok": False, "error": f"{type(e).__name__}: {e}"}
@@ -600,7 +609,16 @@ async def create_meta_adset(
             r = await c.post(f"{GRAPH}/{META_ACCOUNT}/adsets", data=params)
             d = r.json()
             if "error" in d:
-                return {"ok": False, "error": d["error"].get("message", str(d["error"]))}
+                err = d["error"]
+                return {"ok": False, "step": "adset",
+                        "error": err.get("message", ""),
+                        "error_type": err.get("type", ""),
+                        "error_code": err.get("code", ""),
+                        "error_subcode": err.get("error_subcode", ""),
+                        "error_user_title": err.get("error_user_title", ""),
+                        "error_user_msg": err.get("error_user_msg", ""),
+                        "fbtrace": err.get("fbtrace_id", ""),
+                        "sent_params": {k: v for k, v in params.items() if k != "access_token"}}
             return {"ok": True, "adset_id": d.get("id"), "name": name, "status": status}
     except Exception as e:
         return {"ok": False, "error": f"{type(e).__name__}: {e}"}
@@ -797,7 +815,16 @@ async def create_meta_custom_audience(
             r = await c.post(f"{GRAPH}/{META_ACCOUNT}/customaudiences", data=params)
             d = r.json()
             if "error" in d:
-                return {"ok": False, "error": d["error"].get("message", str(d["error"]))}
+                err = d["error"]
+                return {"ok": False, "step": "audience",
+                        "error": err.get("message", ""),
+                        "error_type": err.get("type", ""),
+                        "error_code": err.get("code", ""),
+                        "error_subcode": err.get("error_subcode", ""),
+                        "error_user_title": err.get("error_user_title", ""),
+                        "error_user_msg": err.get("error_user_msg", ""),
+                        "fbtrace": err.get("fbtrace_id", ""),
+                        "sent_params": {k: v for k, v in params.items() if k != "access_token"}}
             return {"ok": True, "audience_id": d.get("id"), "name": name, "subtype": subtype}
     except Exception as e:
         return {"ok": False, "error": f"{type(e).__name__}: {e}"}
