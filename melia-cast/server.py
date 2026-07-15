@@ -803,6 +803,242 @@ async def create_meta_custom_audience(
         return {"ok": False, "error": f"{type(e).__name__}: {e}"}
 
 
+@mcp.tool()
+async def update_meta_entity(
+    entity_id: str,
+    entity_type: str,
+    status: str = "",
+    name: str = "",
+    daily_budget_cents: int = 0,
+    lifetime_budget_cents: int = 0,
+    bid_amount_cents: int = 0,
+    targeting: str = "",
+    end_time: str = "",
+) -> dict:
+    """Update an existing Meta campaign, ad set, or ad. Only pass the fields
+    you want to change — everything omitted is left untouched.
+
+    entity_id            : the campaign/adset/ad ID to update
+    entity_type          : "campaign", "adset", or "ad" (used for validation only;
+                           the Graph API endpoint is the bare ID)
+    status               : ACTIVE, PAUSED, or ARCHIVED. Leave empty to not change.
+    name                 : new name. Leave empty to not change.
+    daily_budget_cents   : new daily budget in cents (campaigns with CBO, or ad sets
+                           with ABO). e.g. 2500 = $25/day. 0 = no change.
+    lifetime_budget_cents: new lifetime budget in cents. 0 = no change.
+    bid_amount_cents     : new bid cap in cents (only for bid-capped strategies).
+    targeting            : JSON string, ad sets only. Replaces the whole spec.
+    end_time             : ISO 8601 end time. Leave empty to not change.
+
+    Returns {ok, entity_id, updated_fields, result}.
+    Common uses: pause a starved ad set, shift CBO budget, rename, stop an ad.
+    """
+    token = os.getenv("META_ADS_TOKEN", "")
+    if not token:
+        return {"ok": False, "error": "META_ADS_TOKEN not set."}
+
+    if entity_type not in ("campaign", "adset", "ad"):
+        return {"ok": False, "error": "entity_type must be campaign, adset, or ad."}
+
+    params: dict[str, Any] = {"access_token": token}
+    changed: list[str] = []
+    if status:
+        params["status"] = status.upper()
+        changed.append(f"status={status.upper()}")
+    if name:
+        params["name"] = name
+        changed.append("name")
+    if daily_budget_cents > 0:
+        params["daily_budget"] = str(daily_budget_cents)
+        changed.append(f"daily_budget={daily_budget_cents/100:.2f}")
+    if lifetime_budget_cents > 0:
+        params["lifetime_budget"] = str(lifetime_budget_cents)
+        changed.append(f"lifetime_budget={lifetime_budget_cents/100:.2f}")
+    if bid_amount_cents > 0:
+        params["bid_amount"] = str(bid_amount_cents)
+        changed.append("bid_amount")
+    if targeting:
+        params["targeting"] = targeting
+        changed.append("targeting")
+    if end_time:
+        params["end_time"] = end_time
+        changed.append("end_time")
+
+    if len(params) == 1:
+        return {"ok": False, "error": "Nothing to update — pass at least one field."}
+
+    try:
+        async with httpx.AsyncClient(timeout=httpx.Timeout(30.0)) as c:
+            r = await c.post(f"{GRAPH}/{entity_id}", data=params)
+            d = r.json()
+            if "error" in d:
+                err = d["error"]
+                return {"ok": False, "entity_id": entity_id,
+                        "error": err.get("message", ""),
+                        "error_code": err.get("code", ""),
+                        "error_subcode": err.get("error_subcode", ""),
+                        "debug": str(d)}
+            return {"ok": True, "entity_id": entity_id, "entity_type": entity_type,
+                    "updated_fields": changed, "result": d}
+    except Exception as e:
+        return {"ok": False, "error": f"{type(e).__name__}: {e}"}
+
+
+@mcp.tool()
+async def delete_meta_entity(entity_id: str, entity_type: str) -> dict:
+    """Permanently DELETE a Meta campaign, ad set, or ad. Irreversible.
+
+    entity_id  : the campaign/adset/ad ID to delete
+    entity_type: "campaign", "adset", or "ad"
+
+    Prefer update_meta_entity(status="PAUSED") for anything you might want back,
+    and status="ARCHIVED" to hide it from the UI while keeping its history.
+    Deleting a campaign deletes every ad set and ad inside it.
+
+    Returns {ok, entity_id, deleted}.
+    """
+    token = os.getenv("META_ADS_TOKEN", "")
+    if not token:
+        return {"ok": False, "error": "META_ADS_TOKEN not set."}
+    if entity_type not in ("campaign", "adset", "ad"):
+        return {"ok": False, "error": "entity_type must be campaign, adset, or ad."}
+
+    try:
+        async with httpx.AsyncClient(timeout=httpx.Timeout(30.0)) as c:
+            r = await c.delete(f"{GRAPH}/{entity_id}", params={"access_token": token})
+            d = r.json()
+            if "error" in d:
+                return {"ok": False, "entity_id": entity_id,
+                        "error": d["error"].get("message", str(d["error"]))}
+            return {"ok": True, "entity_id": entity_id, "entity_type": entity_type,
+                    "deleted": bool(d.get("success", True))}
+    except Exception as e:
+        return {"ok": False, "error": f"{type(e).__name__}: {e}"}
+
+
+@mcp.tool()
+async def get_meta_entities(
+    level: str = "campaign",
+    parent_id: str = "",
+    fields: str = "",
+    effective_status: str = "",
+    limit: int = 50,
+) -> dict:
+    """Read Meta campaigns, ad sets, or ads with their live settings — budgets,
+    status, targeting, creative. The read side of the ads stack.
+
+    level           : "campaign", "adset", or "ad"
+    parent_id       : scope the read. Empty = whole ad account. Pass a campaign ID
+                      to list its ad sets, or an ad set ID to list its ads.
+    fields          : comma-separated Graph fields. Empty = a sensible default set
+                      per level (id, name, status, budgets, etc.).
+    effective_status: filter, e.g. "ACTIVE" or "ACTIVE,PAUSED". Empty = all.
+    limit           : max rows (default 50).
+
+    Returns {ok, level, count, data}.
+    """
+    token = os.getenv("META_ADS_TOKEN", "")
+    if not token:
+        return {"ok": False, "error": "META_ADS_TOKEN not set."}
+    if level not in ("campaign", "adset", "ad"):
+        return {"ok": False, "error": "level must be campaign, adset, or ad."}
+
+    defaults = {
+        "campaign": "id,name,status,effective_status,objective,daily_budget,"
+                    "lifetime_budget,bid_strategy,start_time,stop_time",
+        "adset": "id,name,status,effective_status,campaign_id,daily_budget,"
+                 "lifetime_budget,optimization_goal,billing_event,bid_amount,"
+                 "targeting,start_time,end_time",
+        "ad": "id,name,status,effective_status,adset_id,campaign_id,"
+              "creative{id,name,object_story_spec}",
+    }
+    edge = {"campaign": "campaigns", "adset": "adsets", "ad": "ads"}[level]
+    node = parent_id if parent_id else META_ACCOUNT
+
+    params: dict[str, Any] = {
+        "fields": fields or defaults[level],
+        "limit": str(limit),
+        "access_token": token,
+    }
+    if effective_status:
+        vals = [s.strip() for s in effective_status.split(",") if s.strip()]
+        params["effective_status"] = json.dumps(vals)
+
+    try:
+        async with httpx.AsyncClient(timeout=httpx.Timeout(30.0)) as c:
+            r = await c.get(f"{GRAPH}/{node}/{edge}", params=params)
+            d = r.json()
+            if "error" in d:
+                return {"ok": False, "error": d["error"].get("message", str(d["error"]))}
+            rows = d.get("data", [])
+            return {"ok": True, "level": level, "count": len(rows), "data": rows}
+    except Exception as e:
+        return {"ok": False, "error": f"{type(e).__name__}: {e}"}
+
+
+@mcp.tool()
+async def get_meta_insights(
+    level: str = "campaign",
+    entity_id: str = "",
+    date_preset: str = "last_7d",
+    time_range: str = "",
+    fields: str = "",
+    breakdowns: str = "",
+    limit: int = 100,
+) -> dict:
+    """Read Meta performance data — spend, purchases, cost per purchase, ROAS,
+    CTR, hook rate. This is what replaces Supermetrics reporting.
+
+    level      : "account", "campaign", "adset", or "ad"
+    entity_id  : the ID to report on. Empty = whole ad account.
+    date_preset: today, yesterday, last_7d, last_14d, last_30d, this_month,
+                 last_month, maximum. Ignored if time_range is set.
+    time_range : JSON, e.g. '{"since":"2026-07-01","until":"2026-07-12"}'
+    fields     : comma-separated. Empty = spend, impressions, clicks, ctr, cpc,
+                 purchases, cost per purchase, ROAS, video hook metrics.
+    breakdowns : e.g. "publisher_platform" or "publisher_platform,platform_position"
+                 — use this to see the Reels share of spend.
+    limit      : max rows (default 100).
+
+    Returns {ok, level, count, data}.
+    """
+    token = os.getenv("META_ADS_TOKEN", "")
+    if not token:
+        return {"ok": False, "error": "META_ADS_TOKEN not set."}
+    if level not in ("account", "campaign", "adset", "ad"):
+        return {"ok": False, "error": "level must be account, campaign, adset, or ad."}
+
+    node = entity_id if entity_id else META_ACCOUNT
+    default_fields = (
+        "spend,impressions,reach,frequency,clicks,ctr,cpc,cpm,"
+        "actions,action_values,cost_per_action_type,purchase_roas,"
+        "video_p25_watched_actions,video_p75_watched_actions"
+    )
+    params: dict[str, Any] = {
+        "level": level,
+        "fields": fields or default_fields,
+        "limit": str(limit),
+        "access_token": token,
+    }
+    if time_range:
+        params["time_range"] = time_range
+    else:
+        params["date_preset"] = date_preset
+    if breakdowns:
+        params["breakdowns"] = breakdowns
+
+    try:
+        async with httpx.AsyncClient(timeout=httpx.Timeout(60.0)) as c:
+            r = await c.get(f"{GRAPH}/{node}/insights", params=params)
+            d = r.json()
+            if "error" in d:
+                return {"ok": False, "error": d["error"].get("message", str(d["error"]))}
+            rows = d.get("data", [])
+            return {"ok": True, "level": level, "count": len(rows), "data": rows}
+    except Exception as e:
+        return {"ok": False, "error": f"{type(e).__name__}: {e}"}
+
+
 class _HostRewrite:
     """Pure-ASGI shim: force the inbound Host to 'localhost' so FastMCP's
     streamable-HTTP DNS-rebinding / TrustedHost guard (on by default in
