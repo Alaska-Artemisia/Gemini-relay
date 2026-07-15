@@ -548,6 +548,7 @@ async def create_meta_adset(
     billing_event: str = "IMPRESSIONS",
     bid_strategy: str = "LOWEST_COST_WITHOUT_CAP",
     targeting: str = "",
+    advantage_audience: int = 0,
     promoted_object: str = "",
     start_time: str = "",
     end_time: str = "",
@@ -568,6 +569,12 @@ async def create_meta_adset(
     targeting             : JSON string targeting spec. e.g.
                             '{"geo_locations":{"countries":["US"]},"age_min":25,"age_max":55}'
                             Leave empty for Advantage+ (broad targeting).
+                            Do NOT hand-write targeting_automation — use the
+                            advantage_audience param below; it is injected for you.
+    advantage_audience    : REQUIRED by Meta on all new ad sets (error_subcode
+                            1870227 if missing). 0 = use your targeting as written
+                            (Advantage audience off). 1 = let Meta expand beyond it.
+                            Default 0. Injected into the targeting spec automatically.
     promoted_object       : JSON string. For OUTCOME_SALES:
                             '{"pixel_id":"YOUR_PIXEL","custom_event_type":"PURCHASE"}'
     start_time            : ISO 8601 (e.g. "2026-07-12T00:00:00-0400"). Omit for immediate.
@@ -595,8 +602,16 @@ async def create_meta_adset(
         params["daily_budget"] = str(daily_budget_cents)
     elif lifetime_budget_cents > 0:
         params["lifetime_budget"] = str(lifetime_budget_cents)
-    if targeting:
-        params["targeting"] = targeting
+    # Meta requires targeting_automation.advantage_audience on every new ad set.
+    # Build/merge it in rather than making callers hand-write it.
+    try:
+        t_spec = json.loads(targeting) if targeting else {}
+    except json.JSONDecodeError as e:
+        return {"ok": False, "error": f"targeting is not valid JSON: {e}"}
+    t_auto = t_spec.get("targeting_automation") or {}
+    t_auto.setdefault("advantage_audience", 1 if advantage_audience else 0)
+    t_spec["targeting_automation"] = t_auto
+    params["targeting"] = json.dumps(t_spec)
     if promoted_object:
         params["promoted_object"] = promoted_object
     if start_time:
