@@ -1162,6 +1162,7 @@ async def create_meta_ad_placements(
     description: str = "",
     call_to_action: str = "SHOP_NOW",
     page_id: str = "736164559573286",
+    instagram_actor_id: str = "",
     activate: bool = True,
 ) -> dict:
     """Create ONE ad that carries two crops and lets Meta serve the right one
@@ -1181,9 +1182,14 @@ async def create_meta_ad_placements(
     description    : description line
     call_to_action : CTA button (default SHOP_NOW)
     page_id        : Facebook Page ID (defaults to Me + Lia)
+    instagram_actor_id: IG account ID to represent the brand on Instagram.
+                  REQUIRED by Meta whenever the placement rules name Instagram
+                  positions (subcode 1772103, "Instagram account is missing").
+                  Leave empty to auto-resolve from the Page's connected IG
+                  account.
     activate       : True = ACTIVE immediately; False = PAUSED
 
-    Returns {ok, ad_id, creative_id, feed_hash, story_hash, status}.
+    Returns {ok, ad_id, creative_id, feed_hash, story_hash, ig_actor, status}.
     """
     token = os.getenv("META_ADS_TOKEN", "")
     if not token:
@@ -1234,9 +1240,45 @@ async def create_meta_ad_placements(
                 ],
             }
 
+            # Meta requires an IG identity when placement rules name Instagram
+            # positions (subcode 1772103). Resolve from the Page if not given.
+            ig_actor = instagram_actor_id
+            ig_source = "supplied"
+            if not ig_actor:
+                try:
+                    r0 = await c.get(f"{GRAPH}/{page_id}", params={
+                        "fields": "instagram_business_account,connected_instagram_account",
+                        "access_token": token,
+                    })
+                    d0 = r0.json()
+                    node = (d0.get("instagram_business_account")
+                            or d0.get("connected_instagram_account") or {})
+                    ig_actor = node.get("id", "")
+                    ig_source = "page_lookup"
+                except Exception:
+                    ig_actor = ""
+            if not ig_actor:
+                try:
+                    r0 = await c.get(f"{GRAPH}/{account}/instagram_accounts",
+                                     params={"fields": "id,username",
+                                             "access_token": token})
+                    rows = r0.json().get("data", [])
+                    if rows:
+                        ig_actor = rows[0].get("id", "")
+                        ig_source = "adaccount_lookup"
+                except Exception:
+                    pass
+            if not ig_actor:
+                return {"ok": False, "step": "ig_identity",
+                        "error": "Could not resolve an Instagram account for this "
+                                 "Page or ad account. Pass instagram_actor_id "
+                                 "explicitly.",
+                        "feed_hash": feed_hash, "story_hash": story_hash}
+
+            oss: dict[str, Any] = {"page_id": page_id, "instagram_actor_id": ig_actor}
             creative_spec = {
                 "name": ad_name,
-                "object_story_spec": json.dumps({"page_id": page_id}),
+                "object_story_spec": json.dumps(oss),
                 "asset_feed_spec": json.dumps(asset_feed_spec),
                 "access_token": token,
             }
@@ -1262,17 +1304,8 @@ async def create_meta_ad_placements(
             })
             d = r.json()
             if "error" in d:
-                err = d["error"]
                 return {"ok": False, "step": "ad_create", "creative_id": creative_id,
-                        "feed_hash": feed_hash, "story_hash": story_hash,
-                        "error": err.get("message", ""),
-                        "error_type": err.get("type", ""),
-                        "error_code": err.get("code", ""),
-                        "error_subcode": err.get("error_subcode", ""),
-                        "error_user_title": err.get("error_user_title", ""),
-                        "error_user_msg": err.get("error_user_msg", ""),
-                        "fbtrace": err.get("fbtrace_id", ""),
-                        "debug": str(d)}
+                        "error": d["error"].get("message", "")}
             ad_id = d.get("id")
 
             final_status = "PAUSED"
@@ -1285,6 +1318,7 @@ async def create_meta_ad_placements(
             return {"ok": True, "ad_id": ad_id, "creative_id": creative_id,
                     "feed_hash": feed_hash, "feed_method": m1,
                     "story_hash": story_hash, "story_method": m2,
+                    "ig_actor": ig_actor, "ig_source": ig_source,
                     "ad_name": ad_name, "status": final_status}
     except Exception as e:
         return {"ok": False, "error": f"{type(e).__name__}: {e}"}
