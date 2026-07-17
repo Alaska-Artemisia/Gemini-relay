@@ -641,16 +641,17 @@ async def create_meta_adset(
 
 @mcp.tool()
 async def create_meta_ad(
-    image_url: str,
     ad_name: str,
-    primary_text: str,
-    headline: str,
-    link_url: str,
     adset_id: str,
+    image_url: str = "",
+    primary_text: str = "",
+    headline: str = "",
+    link_url: str = "",
     description: str = "",
     call_to_action: str = "SHOP_NOW",
     page_id: str = "736164559573286",
     activate: bool = True,
+    creative_id: str = "",
 ) -> dict:
     """Create a single Meta ad with image, copy, and link under an existing
     ad set. One ad at a time — never batch (error_subcode 1487390).
@@ -665,6 +666,11 @@ async def create_meta_ad(
     call_to_action: CTA button (SHOP_NOW, LEARN_MORE, etc.)
     page_id     : Facebook Page ID (defaults to Me + Lia)
     activate    : True = set ad ACTIVE immediately; False = leave PAUSED
+    creative_id : reuse an EXISTING creative instead of building a new one.
+                  When set, image_url/primary_text/headline/link_url/description
+                  are ignored — the existing creative supplies all of them.
+                  Use this to run the same creative in another ad set (Meta
+                  cannot move ads between ad sets; you recreate them).
 
     Returns {ok, ad_id, creative_id, image_hash, status} on success.
     """
@@ -674,61 +680,68 @@ async def create_meta_ad(
 
     account = META_ACCOUNT
 
+    if not creative_id and not image_url:
+        return {"ok": False,
+                "error": "Pass either creative_id (reuse) or image_url (new creative)."}
+
     try:
         async with httpx.AsyncClient(timeout=httpx.Timeout(30.0)) as c:
-            # Step 1: Try uploading image by URL for hash (preferred).
-            # Falls back to image_url in creative if /adimages is blocked.
             image_hash = None
-            try:
-                r1 = await c.post(
-                    f"{GRAPH}/{account}/adimages",
-                    data={"url": image_url, "access_token": token},
-                )
-                d1 = r1.json()
-                if "error" not in d1:
-                    images = d1.get("images", {})
-                    if images:
-                        image_hash = list(images.values())[0].get("hash")
-            except Exception:
-                pass  # fall through to image_url path
+            reused = bool(creative_id)
 
-            # Step 2: Create ad creative (hash path or URL path)
-            link_data: dict[str, Any] = {
-                "link": link_url,
-                "message": primary_text,
-                "name": headline,
-                "description": description,
-                "call_to_action": {
-                    "type": call_to_action,
-                    "value": {"link": link_url},
-                },
-            }
-            if image_hash:
-                link_data["image_hash"] = image_hash
-            else:
-                link_data["picture"] = image_url
+            if not reused:
+                # Step 1: Try uploading image by URL for hash (preferred).
+                # Falls back to image_url in creative if /adimages is blocked.
+                try:
+                    r1 = await c.post(
+                        f"{GRAPH}/{account}/adimages",
+                        data={"url": image_url, "access_token": token},
+                    )
+                    d1 = r1.json()
+                    if "error" not in d1:
+                        images = d1.get("images", {})
+                        if images:
+                            image_hash = list(images.values())[0].get("hash")
+                except Exception:
+                    pass  # fall through to image_url path
 
-            creative_spec = {
-                "name": ad_name,
-                "object_story_spec": json.dumps({
-                    "page_id": page_id,
-                    "link_data": link_data,
-                }),
-                "access_token": token,
-            }
-            r2 = await c.post(f"{GRAPH}/{account}/adcreatives", data=creative_spec)
-            d2 = r2.json()
-            if "error" in d2:
-                err = d2["error"]
-                return {"ok": False, "step": "creative",
-                        "image_hash": image_hash,
-                        "error": err.get("message", ""),
-                        "error_type": err.get("type", ""),
-                        "error_code": err.get("code", ""),
-                        "error_subcode": err.get("error_subcode", ""),
-                        "fbtrace": err.get("fbtrace_id", ""),
-                        "debug": str(d2)}
-            creative_id = d2.get("id")
+                # Step 2: Create ad creative (hash path or URL path)
+                link_data: dict[str, Any] = {
+                    "link": link_url,
+                    "message": primary_text,
+                    "name": headline,
+                    "description": description,
+                    "call_to_action": {
+                        "type": call_to_action,
+                        "value": {"link": link_url},
+                    },
+                }
+                if image_hash:
+                    link_data["image_hash"] = image_hash
+                else:
+                    link_data["picture"] = image_url
+
+                creative_spec = {
+                    "name": ad_name,
+                    "object_story_spec": json.dumps({
+                        "page_id": page_id,
+                        "link_data": link_data,
+                    }),
+                    "access_token": token,
+                }
+                r2 = await c.post(f"{GRAPH}/{account}/adcreatives", data=creative_spec)
+                d2 = r2.json()
+                if "error" in d2:
+                    err = d2["error"]
+                    return {"ok": False, "step": "creative",
+                            "image_hash": image_hash,
+                            "error": err.get("message", ""),
+                            "error_type": err.get("type", ""),
+                            "error_code": err.get("code", ""),
+                            "error_subcode": err.get("error_subcode", ""),
+                            "fbtrace": err.get("fbtrace_id", ""),
+                            "debug": str(d2)}
+                creative_id = d2.get("id")
 
             # Step 3: Create ad (PAUSED initially)
             ad_spec = {
@@ -763,6 +776,7 @@ async def create_meta_ad(
                 "ok": True,
                 "ad_id": ad_id,
                 "creative_id": creative_id,
+                "creative_reused": reused,
                 "image_hash": image_hash,
                 "ad_name": ad_name,
                 "status": final_status,
