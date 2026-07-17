@@ -1262,8 +1262,17 @@ async def create_meta_ad_placements(
             })
             d = r.json()
             if "error" in d:
+                err = d["error"]
                 return {"ok": False, "step": "ad_create", "creative_id": creative_id,
-                        "error": d["error"].get("message", "")}
+                        "feed_hash": feed_hash, "story_hash": story_hash,
+                        "error": err.get("message", ""),
+                        "error_type": err.get("type", ""),
+                        "error_code": err.get("code", ""),
+                        "error_subcode": err.get("error_subcode", ""),
+                        "error_user_title": err.get("error_user_title", ""),
+                        "error_user_msg": err.get("error_user_msg", ""),
+                        "fbtrace": err.get("fbtrace_id", ""),
+                        "debug": str(d)}
             ad_id = d.get("id")
 
             final_status = "PAUSED"
