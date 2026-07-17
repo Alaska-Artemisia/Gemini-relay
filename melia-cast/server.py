@@ -1248,9 +1248,25 @@ async def create_meta_ad_placements(
             ig_actor = instagram_actor_id
             ig_source = "supplied"
             if not ig_actor:
-                # The ad-account edge returns ads-compatible IG IDs. The Page's
-                # instagram_business_account ID is a different ID space and is
-                # rejected by the creative endpoint.
+                # The Page's instagram_business_account is the id that
+                # instagram_user_id wants. /act_X/instagram_accounts is empty on
+                # this account, and page_backed_instagram_accounts needs a Page
+                # token we don't hold — so go to the Page fields directly.
+                try:
+                    r0 = await c.get(f"{GRAPH}/{page_id}", params={
+                        "fields": "instagram_business_account{id,username},"
+                                  "connected_instagram_account{id,username}",
+                        "access_token": token,
+                    })
+                    d0 = r0.json()
+                    node = (d0.get("instagram_business_account")
+                            or d0.get("connected_instagram_account") or {})
+                    ig_actor = node.get("id", "")
+                    if ig_actor:
+                        ig_source = f"page_igba:{node.get('username','')}"
+                except Exception:
+                    pass
+            if not ig_actor:
                 try:
                     r0 = await c.get(f"{GRAPH}/{account}/instagram_accounts",
                                      params={"fields": "id,username",
