@@ -336,6 +336,9 @@ async def schedule_batch(posts: list[dict], pace_seconds: float = 2.0) -> dict:
 # ---------------------------------------------------------------------------
 GRAPH = "https://graph.facebook.com/v21.0"
 META_ACCOUNT = os.getenv("META_AD_ACCOUNT", "act_1886177598841143")
+# Me + Lia Instagram (@meandlia.us) — from the Shopify pixel shopping_ig source.
+# Needed for placement-customized ads; the system user has no IG asset assigned.
+MELIA_IG_USER_ID = "24655081327432632"
 
 _SUBTYPE_PLAIN = {
     "WEBSITE": "pixel / website  (NOT Klaviyo)",
@@ -1258,6 +1261,14 @@ async def create_meta_ad_placements(
                         ig_source = "adaccount_lookup"
                 except Exception:
                     pass
+            if not ig_actor:
+                # Fallback: the IG account linked to the Shopify pixel's
+                # shopping_ig source. Used when the system user has no
+                # Instagram asset assigned, so /act_X/instagram_accounts is
+                # empty. Proper fix is assigning meandlia.us to the system user
+                # in Business Settings.
+                ig_actor = MELIA_IG_USER_ID
+                ig_source = "fallback_const"
             if not ig_actor:
                 return {"ok": False, "step": "ig_identity",
                         "error": "Could not resolve an Instagram account for this "
