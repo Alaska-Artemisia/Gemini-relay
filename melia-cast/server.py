@@ -1262,18 +1262,28 @@ async def create_meta_ad_placements(
                 except Exception:
                     pass
             if not ig_actor:
-                # Fallback: the IG account linked to the Shopify pixel's
-                # shopping_ig source. Used when the system user has no
-                # Instagram asset assigned, so /act_X/instagram_accounts is
-                # empty. Proper fix is assigning meandlia.us to the system user
-                # in Business Settings.
-                ig_actor = MELIA_IG_USER_ID
-                ig_source = "fallback_const"
-            if not ig_actor:
+                probe: dict[str, Any] = {}
+                for label, url, params in (
+                    ("adaccount_instagram_accounts",
+                     f"{GRAPH}/{account}/instagram_accounts",
+                     {"fields": "id,username", "access_token": token}),
+                    ("page_backed_instagram_accounts",
+                     f"{GRAPH}/{page_id}/page_backed_instagram_accounts",
+                     {"fields": "id,username", "access_token": token}),
+                    ("page_ig_fields", f"{GRAPH}/{page_id}",
+                     {"fields": "instagram_business_account{id,username},"
+                                "connected_instagram_account{id,username}",
+                      "access_token": token}),
+                ):
+                    try:
+                        rp = await c.get(url, params=params)
+                        probe[label] = rp.json()
+                    except Exception as e:
+                        probe[label] = f"{type(e).__name__}: {e}"
                 return {"ok": False, "step": "ig_identity",
-                        "error": "Could not resolve an Instagram account for this "
-                                 "Page or ad account. Pass instagram_actor_id "
-                                 "explicitly.",
+                        "error": "Could not resolve an Instagram account. "
+                                 "Candidates below — pick the right id.",
+                        "probe": probe,
                         "feed_hash": feed_hash, "story_hash": story_hash}
 
             # Meta deprecated instagram_actor_id in object_story_spec (subcode
@@ -1291,6 +1301,7 @@ async def create_meta_ad_placements(
                 err = d["error"]
                 return {"ok": False, "step": "creative",
                         "feed_hash": feed_hash, "story_hash": story_hash,
+                        "ig_actor": ig_actor, "ig_source": ig_source,
                         "error": err.get("message", ""),
                         "error_user_title": err.get("error_user_title", ""),
                         "error_user_msg": err.get("error_user_msg", ""),
