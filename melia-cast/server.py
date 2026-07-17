@@ -1245,19 +1245,9 @@ async def create_meta_ad_placements(
             ig_actor = instagram_actor_id
             ig_source = "supplied"
             if not ig_actor:
-                try:
-                    r0 = await c.get(f"{GRAPH}/{page_id}", params={
-                        "fields": "instagram_business_account,connected_instagram_account",
-                        "access_token": token,
-                    })
-                    d0 = r0.json()
-                    node = (d0.get("instagram_business_account")
-                            or d0.get("connected_instagram_account") or {})
-                    ig_actor = node.get("id", "")
-                    ig_source = "page_lookup"
-                except Exception:
-                    ig_actor = ""
-            if not ig_actor:
+                # The ad-account edge returns ads-compatible IG IDs. The Page's
+                # instagram_business_account ID is a different ID space and is
+                # rejected by the creative endpoint.
                 try:
                     r0 = await c.get(f"{GRAPH}/{account}/instagram_accounts",
                                      params={"fields": "id,username",
@@ -1275,7 +1265,9 @@ async def create_meta_ad_placements(
                                  "explicitly.",
                         "feed_hash": feed_hash, "story_hash": story_hash}
 
-            oss: dict[str, Any] = {"page_id": page_id, "instagram_actor_id": ig_actor}
+            # Meta deprecated instagram_actor_id in object_story_spec (subcode
+            # 2238281) — instagram_user_id is the supported field.
+            oss: dict[str, Any] = {"page_id": page_id, "instagram_user_id": ig_actor}
             creative_spec = {
                 "name": ad_name,
                 "object_story_spec": json.dumps(oss),
