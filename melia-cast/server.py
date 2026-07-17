@@ -1095,6 +1095,192 @@ async def get_meta_insights(
         return {"ok": False, "error": f"{type(e).__name__}: {e}"}
 
 
+async def _resolve_image_hash(c, account: str, token: str, image_url: str) -> tuple:
+    """Resolve a public image URL to a Meta image hash.
+
+    Tries /adimages first. If the app lacks that capability, falls back to
+    creating a throwaway creative with picture=<url> — Meta ingests the image
+    and reports its hash — then deletes the throwaway.
+    Returns (hash, method) or (None, error_string).
+    """
+    # Path 1: /adimages
+    try:
+        r = await c.post(f"{GRAPH}/{account}/adimages",
+                         data={"url": image_url, "access_token": token})
+        d = r.json()
+        if "error" not in d:
+            imgs = d.get("images", {})
+            if imgs:
+                h = list(imgs.values())[0].get("hash")
+                if h:
+                    return h, "adimages"
+    except Exception:
+        pass
+
+    # Path 2: throwaway creative, read back the hash Meta assigned
+    try:
+        spec = {
+            "name": "tmp-hash-probe",
+            "object_story_spec": json.dumps({
+                "page_id": "736164559573286",
+                "link_data": {
+                    "link": "https://meandlia.com",
+                    "message": "probe",
+                    "picture": image_url,
+                },
+            }),
+            "access_token": token,
+        }
+        r = await c.post(f"{GRAPH}/{account}/adcreatives", data=spec)
+        d = r.json()
+        if "error" in d:
+            return None, f"probe creative failed: {d['error'].get('message','')}"
+        cid = d.get("id")
+        r2 = await c.get(f"{GRAPH}/{cid}",
+                         params={"fields": "image_hash", "access_token": token})
+        h = r2.json().get("image_hash")
+        try:
+            await c.delete(f"{GRAPH}/{cid}", params={"access_token": token})
+        except Exception:
+            pass
+        if h:
+            return h, "probe"
+        return None, "probe returned no image_hash"
+    except Exception as e:
+        return None, f"{type(e).__name__}: {e}"
+
+
+@mcp.tool()
+async def create_meta_ad_placements(
+    ad_name: str,
+    adset_id: str,
+    feed_image_url: str,
+    story_image_url: str,
+    primary_text: str,
+    headline: str,
+    link_url: str,
+    description: str = "",
+    call_to_action: str = "SHOP_NOW",
+    page_id: str = "736164559573286",
+    activate: bool = True,
+) -> dict:
+    """Create ONE ad that carries two crops and lets Meta serve the right one
+    per placement — 4:5 in feeds, 9:16 in Reels/Stories. This is placement
+    asset customization (asset_feed_spec), NOT two separate ads.
+
+    Use this instead of publishing a second ad for the vertical crop: two ads
+    with the same product would compete against each other for the same budget.
+
+    ad_name        : name shown in Ads Manager
+    adset_id       : existing ad set to create the ad under
+    feed_image_url : public HTTPS URL of the 4:5 image (feeds, explore)
+    story_image_url: public HTTPS URL of the 9:16 image (stories, reels)
+    primary_text   : body text
+    headline       : headline
+    link_url       : click destination
+    description    : description line
+    call_to_action : CTA button (default SHOP_NOW)
+    page_id        : Facebook Page ID (defaults to Me + Lia)
+    activate       : True = ACTIVE immediately; False = PAUSED
+
+    Returns {ok, ad_id, creative_id, feed_hash, story_hash, status}.
+    """
+    token = os.getenv("META_ADS_TOKEN", "")
+    if not token:
+        return {"ok": False, "error": "META_ADS_TOKEN not set."}
+    account = META_ACCOUNT
+
+    try:
+        async with httpx.AsyncClient(timeout=httpx.Timeout(60.0)) as c:
+            feed_hash, m1 = await _resolve_image_hash(c, account, token, feed_image_url)
+            if not feed_hash:
+                return {"ok": False, "step": "feed_image", "error": m1}
+            story_hash, m2 = await _resolve_image_hash(c, account, token, story_image_url)
+            if not story_hash:
+                return {"ok": False, "step": "story_image", "error": m2}
+
+            asset_feed_spec = {
+                "images": [
+                    {"hash": feed_hash, "adlabels": [{"name": "feed_crop"}]},
+                    {"hash": story_hash, "adlabels": [{"name": "story_crop"}]},
+                ],
+                "bodies": [{"text": primary_text}],
+                "titles": [{"text": headline}],
+                "descriptions": [{"text": description or " "}],
+                "link_urls": [{"website_url": link_url}],
+                "call_to_action_types": [call_to_action],
+                "ad_formats": ["SINGLE_IMAGE"],
+                "asset_customization_rules": [
+                    {
+                        "customization_spec": {
+                            "publisher_platforms": ["facebook", "instagram"],
+                            "facebook_positions": ["feed", "marketplace",
+                                                   "video_feeds", "search"],
+                            "instagram_positions": ["stream", "explore"],
+                        },
+                        "image_label": {"name": "feed_crop"},
+                        "priority": 1,
+                    },
+                    {
+                        "customization_spec": {
+                            "publisher_platforms": ["facebook", "instagram"],
+                            "facebook_positions": ["story", "facebook_reels"],
+                            "instagram_positions": ["story", "reels",
+                                                    "ig_search", "profile_feed"],
+                        },
+                        "image_label": {"name": "story_crop"},
+                        "priority": 2,
+                    },
+                ],
+            }
+
+            creative_spec = {
+                "name": ad_name,
+                "object_story_spec": json.dumps({"page_id": page_id}),
+                "asset_feed_spec": json.dumps(asset_feed_spec),
+                "access_token": token,
+            }
+            r = await c.post(f"{GRAPH}/{account}/adcreatives", data=creative_spec)
+            d = r.json()
+            if "error" in d:
+                err = d["error"]
+                return {"ok": False, "step": "creative",
+                        "feed_hash": feed_hash, "story_hash": story_hash,
+                        "error": err.get("message", ""),
+                        "error_user_title": err.get("error_user_title", ""),
+                        "error_user_msg": err.get("error_user_msg", ""),
+                        "error_subcode": err.get("error_subcode", ""),
+                        "fbtrace": err.get("fbtrace_id", "")}
+            creative_id = d.get("id")
+
+            r = await c.post(f"{GRAPH}/{account}/ads", data={
+                "name": ad_name,
+                "adset_id": adset_id,
+                "creative": json.dumps({"creative_id": creative_id}),
+                "status": "PAUSED",
+                "access_token": token,
+            })
+            d = r.json()
+            if "error" in d:
+                return {"ok": False, "step": "ad_create", "creative_id": creative_id,
+                        "error": d["error"].get("message", "")}
+            ad_id = d.get("id")
+
+            final_status = "PAUSED"
+            if activate:
+                r = await c.post(f"{GRAPH}/{ad_id}",
+                                 data={"status": "ACTIVE", "access_token": token})
+                if r.json().get("success"):
+                    final_status = "ACTIVE"
+
+            return {"ok": True, "ad_id": ad_id, "creative_id": creative_id,
+                    "feed_hash": feed_hash, "feed_method": m1,
+                    "story_hash": story_hash, "story_method": m2,
+                    "ad_name": ad_name, "status": final_status}
+    except Exception as e:
+        return {"ok": False, "error": f"{type(e).__name__}: {e}"}
+
+
 class _HostRewrite:
     """Pure-ASGI shim: force the inbound Host to 'localhost' so FastMCP's
     streamable-HTTP DNS-rebinding / TrustedHost guard (on by default in
